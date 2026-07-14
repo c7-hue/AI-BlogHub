@@ -1,4 +1,5 @@
 const serve = require('../controller/serve')
+const ai = require('../controller/ai')
 
 module.exports = function(app){
   app.get('/', (req, res) => {
@@ -18,6 +19,32 @@ module.exports = function(app){
   // 管理员登录
   app.post('/login',(req,res)=>{
     serve.login(req,res)//调用管理员登录方法
+  })
+
+  // All routes registered below this point require a valid login token.
+  app.use((req, res, next) => {
+    const authorization = req.headers.authorization || ''
+    const bearerToken = authorization.startsWith('Bearer ')
+      ? authorization.slice(7)
+      : ''
+    const token = bearerToken || req.body?.token
+
+    if (!token || !require('../lib/jwt').verifyToken(token)) {
+      return res.status(401).send({ code: 300, message: 'Token invalid or expired' })
+    }
+
+    req.authToken = token
+    next()
+  })
+
+  // AI聊天接口
+  app.post('/ai/chat',(req,res)=>{
+    ai.chatWithAI(req,res)//调用AI聊天方法
+  })
+
+  // AI流式聊天接口
+  app.post('/ai/chat-stream',(req,res)=>{
+    ai.chatWithAIStream(req,res)//调用AI流式聊天方法
   })
 
   // 获取评论getComment

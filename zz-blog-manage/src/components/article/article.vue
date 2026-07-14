@@ -1,14 +1,18 @@
 <template>
   <yk-space dir="vertical" style="width: 100%;" size="xl">
-    <articleItemView v-for="item in articleList" :key="item.id" :data="item" @delete="deleteArticle" @state="updateState"/>
+    <articleItemView v-for="item in articleList" :key="item.id" :data="item" @delete="deleteArticle"
+     @state="updateState" :searchTerm="props.searchTerm"/>
     <div class="pagination">
-      <yk-pagination :total="count" size="m" @change="changePage" :default-page-size="props.pageSize" :current="request.nowPage"></yk-pagination>  
+      <yk-pagination :total="count" size="m" @change="changePage" :default-page-size="props.pageSize" :current="request.nowPage" v-show="count/props.pageSize>1"></yk-pagination>  
+    </div>
+    <div class="empty" v-show="count==0">
+      <yk-empty description="暂无数据" type="secondary"></yk-empty>
     </div>
   </yk-space>
 </template>
 
 <script setup lang="ts">
-import {ref,onMounted,watch,getCurrentInstance} from 'vue'
+import {onMounted,watch,getCurrentInstance} from 'vue'
 import articleItemView from './article-item.vue'
 import { useArticle } from '../../hooks/article';
 import {useUserStore} from '../../store/user'
@@ -32,7 +36,7 @@ const props=defineProps({
     default:-1,
     type:[Number,String],
   },
-  serchTerm:{
+  searchTerm:{
     default:'',
     type:String,
   }
@@ -44,7 +48,7 @@ const request={
   nowPage:1,
   state:props.state,
   subsetId:props.subsetId,
-  serchTerm:props.serchTerm,
+  searchTerm:props.searchTerm,
   count:true,
   classify:0,
 }
@@ -75,12 +79,14 @@ const changePage=(e:number)=>{
 watch(
   props,()=>{
     console.log(props.state,props.subsetId);
+    console.log(props);
+    
     // 查询数据
     request.nowPage=1;
     request.pageSize=props.pageSize;
     request.state=props.state;
     request.subsetId=props.subsetId;
-    request.serchTerm=props.serchTerm;
+    request.searchTerm=props.searchTerm;
     request.count=true;
     request.classify=0;
     // 重置count为0，确保分页器正确显示
@@ -101,6 +107,13 @@ onMounted(()=>{//组件挂载时获取文章  就是默认获取数据
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    width: 100%;
+  }
+  .empty{
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
   }
 </style>

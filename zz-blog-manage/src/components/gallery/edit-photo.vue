@@ -3,7 +3,7 @@
     <yk-upload :upload-url="uploadUrl" :file-list="fileList" :draggable="true" @handle-success="handleSuccess"></yk-upload>   
     <div class="waterfall">
       <div class="waterfall__item" v-for="item in fileList">  
-        <img :src="baseImgUrl+'/'+ item.url">   
+        <img :src="baseImgUrl+'/'+ item.url" loading="lazy" decoding="async">   
         <IconStarFill class="waterfall__item--cover" v-show="item.id ===coverIndex"></IconStarFill>
         <yk-space size="ss">
           <p class="waterfall__item--tool" v-show="item.id !=coverIndex" @click="changeCover(item)" >设为封面</p>
@@ -15,8 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref} from 'vue'
-import {mphoto} from '../../mock/data'
+import { ref,watch} from 'vue' 
 import {baseUrl, baseImgUrl} from '../../utils/env'
 import {useCode} from '../../hooks/code'
 import type {FileData} from '../../utils/interface'
@@ -24,17 +23,12 @@ import {useFile} from '../../hooks/files'
 
 const {tackleCode}=useCode()
 
+const props = defineProps(['cover','content'])
+
 const emits = defineEmits(['cover','editors'])
 
-// 获取照片
-const photos=ref()
-
-const getPhotos=()=>{
-  photos.value=mphoto.data
-}
-
 const uploadUrl = `${baseUrl}/upload`
-const fileList = ref<{url:string;id:number}[]>([])  
+const fileList = ref<{url:string;id:number;name:string;status:string;uid:number}[]>([])  
 
 // 封面
 const coverIndex=ref<number>(-1)
@@ -68,27 +62,51 @@ const handleSuccess=(e:{code:number,data:FileData})=>{
   if(tackleCode(e.code)){
     let photo={
       id:e.data.id,
-      url:e.data.url
+      url:e.data.url,
+      name:e.data.url.split('/').pop() || 'image.jpg',
+      status:'success',
+      uid:Date.now()
     }
     console.log(photo);
-    
+
     fileList.value.push(photo)
-    emits('editors',fileList.value.map((obj:any)=>JSON.stringify(obj)).join(' '))   
+    emits('editors',fileList.value.map((obj:any)=>JSON.stringify({id:obj.id,url:obj.url})).join(' '))
     if(coverIndex.value == -1){
       coverIndex.value=photo.id
-      emits('cover',photo.url)  
+      emits('cover',photo.url)
     }
   }
-  console.log(e);
-  console.log(fileList.value);
-  console.log(photos.value);
-  
 } 
 
-
-onMounted(()=>{
-  getPhotos();
-})
+watch(
+  () => props.content,
+  (e) => {
+    if (!e) {
+      fileList.value = []
+      return
+    }
+    let cont = e.split(" ")
+    fileList.value = cont.map((obj: string) => {
+      const parsed = JSON.parse(obj)
+      return {
+        id: parsed.id,
+        url: parsed.url,
+        name: parsed.url.split('/').pop() || 'image.jpg',
+        status: 'success',
+        uid: parsed.id || Date.now()
+      }
+    })
+    if (props.cover) {
+      for (let i = 0; i < fileList.value.length; i++) {
+        const file = fileList.value[i]
+        if (file && props.cover === file.url) {
+          coverIndex.value = file.id
+        }
+      }
+    }
+  },
+  { immediate: true }
+)
 
 </script>
 

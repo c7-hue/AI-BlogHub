@@ -2,74 +2,57 @@
   <div class="gallery">
     <div class="gallery__content">
       <div class="gallery__content__files">
-         <galleryItemView v-for="item in articleList" :key="item.id" :data="item" @delete="deleteArticle" @state="updateState"/>
+         <galleryItemView v-for="item in articleList" :key="item.id" :data="item" @delete="deleteArticle"
+          @state="updateState" :searchTerm="props.searchTerm"/>
       </div>
     </div>
     <div class="pagination">
-      <yk-pagination :total="count" size="m" @change="changePage"></yk-pagination>
+      <yk-pagination :total="count" size="m" @change="changePage" :default-page-size="request.pageSize" :current="request.nowPage" v-show="count/request.pageSize>1"></yk-pagination> 
+    </div>
+    <div class="empty" v-show="count==0">
+      <yk-empty description="暂无数据" type="secondary"></yk-empty>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { ArticleData } from '../../utils/interface';
-import {ref,onMounted,getCurrentInstance} from 'vue'
-import { mkgallery } from '../../mock/data';
 import galleryItemView from './gallery-item.vue'
+import {onMounted,watch,getCurrentInstance} from 'vue'
+import { useArticle } from '../../hooks/article';
+import {useUserStore} from '../../store/user'
+
+const userStore=useUserStore()
+
+const {getData,articleList,count,deleteArticle}=useArticle()
 
 const proxy:any=getCurrentInstance()?.proxy
 
 const props=defineProps({
   pageSize:{
     type:Number,
-    default:6,//每页显示数量
+    default:3,//每页显示数量
   },
   subsetId:{
     default:-1,
-    type:Number,
+    type:[Number,String],
   },
-  state:{
-    default:0,
-    type:Number,
-  },
-  serchTerm:{
+  searchTerm:{
     default:'',
     type:String,
   }
 })
 
 const request={
-  pagesize:props.pageSize,
+  token:userStore.token,
+  pageSize:props.pageSize,
   nowPage:1,
-  state:props.state,
+  state:-1,
   subsetId:props.subsetId,
-  serchTerm:props.serchTerm,
+  searchTerm:props.searchTerm,
   count:true,
+  classify:1,
 }
 
-
-//获取文章
-// 文章
-const articleList = ref<ArticleData[]>([]);
-// 文章总数
-const count = ref<number>(0);
-
-const getData=(e:boolean)=>{
-  if(e){
-    count.value=mkgallery.count
-  }
-  let arr=mkgallery.list.slice(//slice方法获取当前页的数据
-    (request.nowPage-1)*request.pagesize,
-    request.nowPage*request.pagesize
-  )
-  articleList.value=[...arr]
-}
-
-// 删除
-const deleteArticle=(id:number)=>{
-  articleList.value=articleList.value.filter(item=>item.id!==id)
-  proxy.$message({ message:'删除成功', type:'success'})
-}
 
 // 修改状态
 const updateState=(e:{id:number,state:number})=>{
@@ -89,11 +72,28 @@ const updateState=(e:{id:number,state:number})=>{
 // 翻页
 const changePage=(e:number)=>{
   request.nowPage=e; // 📄 更新当前页码（比如从1变成2）
-  getData(false);// 🔄 重新加载数据，但不更新总数
+  request.count=true; // 确保 API 返回总数
+  getData(request);// 🔄 重新加载数据
 }
 
+watch(
+  props,()=>{
+    // 查询数据
+    request.nowPage=1;
+    request.pageSize=props.pageSize;
+    request.subsetId=props.subsetId;
+    request.searchTerm=props.searchTerm;
+    request.count=true;
+    request.classify=1;
+    // 重置count为0，确保分页器正确显示
+    count.value = 0;
+    getData(request)
+    
+  }
+)
+
 onMounted(()=>{//组件挂载时获取文章  就是默认获取数据
-  getData(true)
+  getData(request)
 })
 </script>
 
@@ -105,7 +105,8 @@ onMounted(()=>{//组件挂载时获取文章  就是默认获取数据
   border-radius: @radius-m;
 
   &__content{
-    display: inline;
+    display: block;
+    width: 100%;
     &__files{
       display: grid;
       grid-template-columns: repeat(auto-fill, 238px);// 自动填充列数，每个列宽度为240px
@@ -121,6 +122,13 @@ onMounted(()=>{//组件挂载时获取文章  就是默认获取数据
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    width: 100%;
+  }
+  .empty{
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
   }
  }

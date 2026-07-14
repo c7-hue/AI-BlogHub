@@ -27,20 +27,27 @@
       </yk-space>
     </div>
     <div class="files_main">
-      <FilesItem v-for="item in files"  :data="item" :key="item.id" @delete="deleteFile" @selected="selectFile" @changeSubsetId="changeSubset"/>
+      <FilesItem v-for="item in files"  :data="item" :key="item.id" @delete="deleteFile" @selected="selectFile" @changeSubsetId="changeSubset"/>    
     </div>
-     <div class="pagination">
-      <yk-pagination :total="count" size="m" @change="changePage"></yk-pagination>
+    <div class="pagination" v-show="count/props.pageSize > 1"> 
+      <yk-pagination :total="count" size="m" @change="changePage" :default-page-size="props.pageSize"></yk-pagination>  
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, getCurrentInstance} from 'vue'
-import {mkfile} from '../../mock/data'
+import { onMounted, ref, getCurrentInstance,watch} from 'vue'
 import FilesItem from './files-item.vue'
 import {useSubsetStore} from '../../store/subset';
 import './files.less'
+import {useCode} from '../../hooks/code'
+import {useUserStore} from '../../store/user'
+import {deleteFileApi,removeFileApi,getFileApi} from '../../api/index'
+
+const userStore = useUserStore()
+
+const {tackleCode}=useCode()
+
 //store
 const subsetStore = useSubsetStore();
 
@@ -50,48 +57,52 @@ type FileProps ={
 }
 
 const props=withDefaults(defineProps<FileProps>(),{ // ① 声明 props 类型
-  pageSize:8,                                       // ② 设置默认值
+  pageSize:16,                                       // ② 设置默认值
   subsetId:-1,
 })
 //总数
 const count = ref<number>(123)// 总共123个文件
 
 // 数据内容
-const files=ref();
+const files=ref<any[]>([]);
 
 // 请求
 type Request={
-  token?:string;
+  token:string;
   pageSize:number;//单页条数
   nowPage:number;//当前页
-  count?:boolean;
+  count:boolean;
+  subsetId?:number|string;
 }
 
 const request:Request={// 当前第1页
+  token:userStore.token,
   pageSize:props.pageSize,
   nowPage:1,
-  count:false
+  subsetId:props.subsetId,
+  count:false,
 }
 
 // 获取数据
-const drawData = (e:boolean) => {
-  let data = mkfile; // 📦 从模拟数据中取数据
-  if(e){                  // 🔓 如果是首次加载
-    count.value=data.count;//    更新总数（123条）
-  }
-  files.value=data.list.slice(// ✂️ 截取当前页的数据
-    (request.nowPage-1)*request.pageSize,
-    request.nowPage*request.pageSize
-  );
-  //加入选择项
-  for(let i=0;i<files.value.length;i++){
-    files.value[i] = {
-      ...files.value[i],
-      selected: false
-    };
-  }
+const drawData = (e: boolean) => {
+  request.count = e;
 
-  
+  getFileApi(request).then((res: any) => {  
+    if (tackleCode(res.code)) {
+      console.log(res.data)
+      if (e) {
+        count.value = res.data.count
+      }
+      let arr = res.data.list
+      // 加入选择项
+      for (let i = 0; i < arr.length; i++) {
+        arr[i].selected = false;
+      }
+      files.value = arr
+    }
+  })
+
+  // console.log(files.value)
 }
 
 // 头部操作
@@ -160,31 +171,57 @@ const selectFile=(e:any)=>{
 }
 
 // 删除
-//删除单张图片
-const deleteFile=(e:number)=>{
-  files.value=files.value.filter((item:any)=>{
-    return item!=e
+// 删除单张图片
+const deleteFile = (id: number, url: string) => {
+  let request = {
+    token: userStore.token,
+    filesId: id,
+    filesUrl: url,
+  }
+  deleteFileApi(request).then((res: any) => {
+    if (tackleCode(res.code)) {
+      proxy.$message({ type: 'success', message: '删除成功' })
+      files.value = files.value.filter((item: any) => {
+        return item.id !== id
+      })
+    }
   })
 }
 
 // 全部删除
-const deleteFiles=()=>{
-  if(selectedFilesId.value.length>0){
-    for(let i=0;i<selectedFilesId.value.length;i++){
-      files.value=files.value.filter((item:any)=>{
-        return item.id!==selectedFilesId.value[i]
-      })
+const deleteFiles = () => {
+  if (selectedFilesId.value.length > 0) {
+    // 收集提交后端内容
+    let url = []
+    for (let i = 0; i < selectedFilesId.value.length; i++) {
+      for (let j = 0; j < files.value.length; j++) {
+        if (files.value[j].id == selectedFilesId.value[i]) {
+          url.push(files.value[j].url) // 注意：此处可能有逻辑错误，见下方分析
+        }
+      }
     }
-    //清除选择的ID
-    selectedFilesId.value=[]
+
+    let request = {
+      token: userStore.token,
+      filesId: selectedFilesId.value.join(','),
+      filesUrl: url,
+    }
+
+    deleteFileApi(request).then((res: any) => {
+      if (tackleCode(res.code)) {
+        proxy.$message({ type: 'primary', message: '删除成功~' })
+        // 从数据中移除已删除的文件 静态删除被删除的文件  
+        for (let i = 0; i < selectedFilesId.value.length; i++) {
+          files.value = files.value.filter((item: any) => {
+            return item.id !== selectedFilesId.value[i]
+          })
+        }
+        // 清除选择的ID
+        selectedFilesId.value = [];
+      }
+    })
   }
 }
-//切换单张图片分组
-const changeSubset=(e:any)=>{
-  proxy.$message({ type: 'primary', message: e.id })
-}
-
-
 
 // 翻页
 const changePage=(e:number)=>{
@@ -220,6 +257,39 @@ const changePage=(e:number)=>{
   }
 }
 
+// 切换单张图片分组
+const changeSubset = (e: any) => {
+  console.log(e)
+
+  let request = {
+    token: userStore.token,
+    id: e.id,
+    subsetId: e.subsetId,
+  }
+  removeFileApi(request).then((res: any) => {
+    if (tackleCode(res.code)) {
+      // 静态删除列表项
+      files.value = files.value.filter((item: any) => {
+        return item.id !== e.id
+      })
+      // 将分组数字修改
+      for(let i=0;i<subsetStore.data.length;i++){
+        const item = subsetStore.data[i]
+        if(!item) continue
+        // 增加移动后分组
+        if(item.id==e.subsetId){
+          item.value++
+        }
+        // 减少移动前分组
+        if(item.id==props.subsetId &&props.subsetId!=-1){
+          item.value--
+        }  
+      } 
+      proxy.$message({ type: 'primary', message: '移动完成' })
+    }
+  })
+}
+
 //分类选择
 const subsetSelectedId=ref<number | string>();
 //切换 分组
@@ -231,9 +301,49 @@ const proxy: any = getCurrentInstance()?.proxy
 function cancel() {
   proxy.$message({ type: 'warning', message: '你点击了取消按钮' })
 }
+
+// 切换多张图片分组
 function confirm() {
-  proxy.$message({ type: 'primary', message: '你点击了确认按钮' })
+  let request = {
+    token: userStore.token,
+    fileId: selectedFilesId.value.join(','),
+    subsetId: subsetSelectedId.value,
+  }
+  removeFileApi(request).then((res: any) => {
+    if (tackleCode(res.code)) {
+      // 静态删除列表项
+      for (let i = 0; i < selectedFilesId.value.length; i++) {
+        files.value = files.value.filter((item: any) => {
+          return item.id !== selectedFilesId.value[i]
+        })
+      }
+      // 将分组数字修改
+      for (let i = 0; i < subsetStore.data.length; i++) {
+        const item = subsetStore.data[i]
+        if(!item) continue
+        // 增加移动后分组
+        if (item.id === subsetSelectedId.value) {
+          item.value += selectedFilesId.value.length
+        }
+        // 减少移动前分组
+        if (item.id === props.subsetId && props.subsetId !== -1) {
+          item.value -= selectedFilesId.value.length
+        }
+      }
+      // 清除选择的ID
+      selectedFilesId.value = [];
+      proxy.$message({ type: 'primary', message: '移动完成' })
+    }
+  })
 }
+
+watch(
+  props,()=>{
+  // 查询数据
+  request.subsetId=props.subsetId;
+  request.nowPage=1;
+  drawData(true);
+})
 
 onMounted(()=>{
   drawData(true);// 🚀 页面刚打开时，首次加载数据+总数

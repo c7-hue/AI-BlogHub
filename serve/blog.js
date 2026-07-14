@@ -1,4 +1,8 @@
 const express = require('express')
+const { loadEnv } = require('./lib/env')
+
+loadEnv()
+
 const app = express()
 const config = require('./config/default')
 const jwt = require('./lib/jwt')
@@ -9,7 +13,7 @@ app.use(express.static(__dirname + '/data'))
 app.use(function (req, res, next) {
     //允许访问ip *为所有
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
     res.header("Access-Control-Allow-Credentials", true);
     res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
     res.header("X-Powered-By", ' 3.2.1')
@@ -27,20 +31,18 @@ app.use(function (req, res, next) {
 app.use(express.json())//解析位 request.body 格式为 json
 
 // 引入路由
+console.log('Loading all routes');
 try {
   const indexRoutes = require('./routers/index');
   indexRoutes(app);
+  console.log('Index routes loaded successfully');
   
   const filesRoutes = require('./routers/files');
   filesRoutes(app);
+  console.log('Files routes loaded successfully');
 } catch (error) {
   console.error('Error loading routes:', error);
 }
-
-// 根路径
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
 
 // 测试路由
 app.post('/test',(req,res)=>{
@@ -49,6 +51,6 @@ app.post('/test',(req,res)=>{
   res.send({code: 200, data: 'test success'});
 });
 
-app.listen(config.port, () => {
+app.listen(config.port, '0.0.0.0', () => {
   console.log(`已经启动端口 ${config.port}`)
 })

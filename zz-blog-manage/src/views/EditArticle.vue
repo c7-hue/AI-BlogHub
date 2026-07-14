@@ -8,23 +8,156 @@
         <yk-button type="primary" @click="submit(1)">发布</yk-button>  
       </yk-space>
     </div>
-    <editor style="width: 1200px;" @editors="editorData" :content="defaultArticle?.[0]">
-      <Forms :classify="0" @formData="formData" style="width: 820px;" :form="defaultArticle?.[1]"></Forms>  
-    </editor>
+    <div class="edit-article__workspace">
+      <div ref="editorShellRef" class="edit-article__editor-shell">
+        <editor
+          ref="editorRef"
+          style="width: 1200px;"
+          @editors="editorData"
+          :content="defaultArticle?.[0]"
+        >
+          <Forms
+            ref="formsRef"
+            :classify="0"
+            @formData="formData"
+            style="width: 820px;"
+            :form="defaultArticle?.[1]"
+          ></Forms>  
+        </editor>
+      </div>
+      <div class="edit-article__side" :style="sideStyle">
+        <ArticleAIWriter
+          :get-content="getEditorContent"
+          :get-selected-text="getSelectedText"
+          :current-title="form?.title"
+          :current-summary="form?.introduce"
+          @insert-html="insertAIHtml"
+          @replace-selection="replaceAISelection"
+          @apply-meta="applyAIMeta"
+          @before-apply="saveVersionBeforeAI"
+        />
+        <ArticleVersionPanel
+          ref="versionPanelRef"
+          :storage-key="versionStorageKey"
+          :get-snapshot="getArticleSnapshot"
+          @restore="restoreArticleSnapshot"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import editor from "../components/editor/editor.vue"
 import Forms from "../components/forms/forms.vue"
+import ArticleAIWriter from "../components/ai/ArticleAIWriter.vue"
+import ArticleVersionPanel from "../components/ai/ArticleVersionPanel.vue"
 // 临时占位，moment 工具函数待补充
 import { useArticle } from '../hooks/article'
-import {useRouter} from 'vue-router'
+import { onBeforeRouteLeave, useRouter } from 'vue-router'
 
 
-const {submit,nowMoment,formData,editorData,defaultArticle,id,getArticleDetail}=useArticle()
+const {submit,nowMoment,formData,editorData,defaultArticle,id,getArticleDetail,form}=useArticle()
 
 const router=useRouter()
+const editorRef = ref<InstanceType<typeof editor> | null>(null)
+const formsRef = ref<InstanceType<typeof Forms> | null>(null)
+const versionPanelRef = ref<InstanceType<typeof ArticleVersionPanel> | null>(null)
+const editorShellRef = ref<HTMLElement | null>(null)
+const editorShellHeight = ref(0)
+let editorResizeObserver: ResizeObserver | null = null
+
+const sideStyle = computed(() => {
+  return editorShellHeight.value
+    ? { height: `${editorShellHeight.value}px` }
+    : {}
+})
+
+type ArticleVersionSnapshot = {
+  title?: string
+  introduce?: string
+  label?: string[]
+  subset_id?: number
+  cover?: string
+  content?: string
+}
+
+const versionStorageKey = computed(() => {
+  return `article-version:${id.value || 'new'}`
+})
+
+const getEditorContent = () => {
+  return editorRef.value?.getHtml() || ''
+}
+
+const getSelectedText = () => {
+  return editorRef.value?.getSelectionText() || ''
+}
+
+const insertAIHtml = (html: string) => {
+  editorRef.value?.insertHtml(html)
+}
+
+const replaceAISelection = (html: string) => {
+  editorRef.value?.replaceSelection(html)
+}
+
+const applyAIMeta = (suggestion: {
+  title?: string;
+  introduce?: string;
+  tags?: string[];
+  categoryName?: string;
+}) => {
+  formsRef.value?.applyAISuggestion(suggestion)
+}
+
+const saveVersionBeforeAI = () => {
+  versionPanelRef.value?.saveManual()
+}
+const getArticleSnapshot = (): ArticleVersionSnapshot => {
+  return {
+    title: form.value?.title || '',
+    introduce: form.value?.introduce || '',
+    label: Array.isArray(form.value?.label) ? [...form.value.label] : [],
+    subset_id: form.value?.subset_id,
+    cover: form.value?.cover || '',
+    content: getEditorContent(),
+  }
+}
+
+const restoreArticleSnapshot = (snapshot: ArticleVersionSnapshot) => {
+  formsRef.value?.setFormData({
+    title: snapshot.title || '',
+    introduce: snapshot.introduce || '',
+    label: Array.isArray(snapshot.label) ? snapshot.label : [],
+    subset_id: snapshot.subset_id,
+    cover: snapshot.cover || '',
+  })
+  editorRef.value?.setHtml(snapshot.content || '')
+}
+const syncSideHeight = () => {
+  editorShellHeight.value = editorShellRef.value?.offsetHeight || 0
+}
+
+onMounted(() => {
+  nextTick(() => {
+    syncSideHeight()
+    if (editorShellRef.value) {
+      editorResizeObserver = new ResizeObserver(syncSideHeight)
+      editorResizeObserver.observe(editorShellRef.value)
+    }
+  })
+})
+
+onBeforeUnmount(() => {
+  editorResizeObserver?.disconnect()
+})
+
+onBeforeRouteLeave(() => {
+  versionPanelRef.value?.saveDraft()
+  return true
+})
 
 if(router.currentRoute.value.query.id){
   id.value=Number(router.currentRoute.value.query.id)
@@ -49,7 +182,7 @@ if(router.currentRoute.value.query.id){
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 1200px;// 最大宽度 1200px
+    width: 1540px;// 与下方编辑器和 AI 面板对齐
 
     &__title{
       .font-xl();
@@ -60,6 +193,28 @@ if(router.currentRoute.value.query.id){
   &__content{
     display: flex;// 主内容区域 左右布局
     gap: @space-l;// 主内容区域 左右间距
+  }
+
+  &__workspace{
+    display: grid;
+    grid-template-columns: 1200px 320px;
+    align-items: start;
+    gap: @space-l;
+    width: 1540px;
+  }
+
+  &__editor-shell{
+    width: 1200px;
+    min-height: 0;
+  }
+
+  &__side{
+    display: flex;
+    flex-direction: column;
+    gap: @space-l;
+    width: 320px;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .edit-form{

@@ -147,7 +147,7 @@ let diary =
     title varchar(100) not null comment '标题',
     content varchar(5000) not null comment '内容',
     picture varchar(100) comment '图片地址',
-    weather int comment '天气',
+    weather_id int comment '天气',
     mood int default 0 comment '心情',
     moment varchar(100) not null comment '时间',
     primary key (id)

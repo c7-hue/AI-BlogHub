@@ -1,9 +1,9 @@
 <template>
   <yk-space dir="vertical"> <!--//dir="vertical" 垂直方向排列  -->
-    <TopTitle name="博客文章" :isSearch="true"> </TopTitle>
-    <subset :classify="0" @nowSubset="nowSelect"></subset>
+    <TopTitle name="博客文章" :isSearch="true" @search="search"> </TopTitle>
+    <subset :classify="0" @nowSubset="nowSelect"  v-show="!query"></subset> 
     <yk-space style="width: 100%;">
-      <ArticleView style="width: 100%;" :state="nowState" :subsetId="nowSubset"></ArticleView>    
+      <ArticleView style="width: 100%;" :state="nowState" :subsetId="nowSubset" :searchTerm="searchTerm"></ArticleView>    
       <labelView ></labelView>
     </yk-space>
     </yk-space>
@@ -30,6 +30,19 @@ const nowSelect = (e:{id:number|string,type:string})=>{
   }else if(e.type=='subset' || e.type=='exclude'){
     nowState.value=-1
     nowSubset.value=e.id
+  }
+}
+
+// 搜索
+const searchTerm = ref<string>()
+const query=ref<boolean>(false)  
+const search = (e:string)=>{
+  searchTerm.value=e
+  if(e){
+    query.value = true
+  }
+  else{
+    query.value = false
   }
 }
 </script>

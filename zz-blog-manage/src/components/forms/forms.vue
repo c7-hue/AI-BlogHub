@@ -52,12 +52,10 @@
 
 <script setup lang="ts">
 import { onMounted, ref,computed ,watch} from 'vue'
-import type { LabelData } from '../../utils/interface';
 import {useSubset} from '../../hooks/subset'
 import {useLabel} from '../../hooks/label'
 import {useSubsetStore} from '../../store/subset'
 import {baseUrl,baseImgUrl} from '../../utils/env'
-import {uploadFileApi} from '../../api/index'
 import {useCode} from '../../hooks/code'
 import type { FormData } from '../../utils/interface';
 
@@ -86,6 +84,13 @@ const props=withDefaults(defineProps<formProps>(),{
 // })
 
 const emits=defineEmits(['formData'])
+
+type AISuggestion = {
+  title?: string;
+  introduce?: string;
+  tags?: string[];
+  categoryName?: string;
+}
 
 const formatData = ref<FormData>({
   title:"",
@@ -146,9 +151,6 @@ const subsetList = ref()
 // 标签
 // 所有标签
 const labelArr = ref<any[]>([])
-// 输入标签
-const inputLabel = ref<string|number>()
-
 //标签弹窗
 const visible = ref<boolean>(false)
 const showlabel = () =>{
@@ -193,6 +195,67 @@ const handleSuccess = (res:any) =>{
     formatData.value.cover=photoUrl.url 
   }
 }
+
+const emitFormData = () => {
+  emits('formData', formatData.value)
+}
+
+const normalizeTags = (tags: string[]) => {
+  return Array.from(new Set(tags.map((tag) => tag.trim()).filter(Boolean))).slice(0, 3)
+}
+
+const syncCoverPreview = () => {
+  if (formatData.value.cover) {
+    const url = formatData.value.cover.startsWith('http')
+      ? formatData.value.cover
+      : baseImgUrl + '/' + formatData.value.cover
+    fileUrl.value = [{ name: 'cover', url }]
+  } else {
+    fileUrl.value = []
+  }
+}
+
+const setFormData = (data: Partial<FormData>) => {
+  formatData.value = {
+    ...formatData.value,
+    ...data,
+    label: Array.isArray(data.label) ? normalizeTags(data.label) : formatData.value.label || [],
+  }
+
+  if (formatData.value.subset_id && subsetList.value) {
+    nowSubset(formatData.value.subset_id)
+  }
+  syncCoverPreview()
+  emitFormData()
+}
+
+const applyAISuggestion = (suggestion: AISuggestion) => {
+  const nextData: Partial<FormData> = {}
+  if (suggestion.title) {
+    nextData.title = suggestion.title
+  }
+  if (suggestion.introduce) {
+    nextData.introduce = suggestion.introduce
+  }
+  if (suggestion.tags?.length) {
+    nextData.label = suggestion.tags
+  }
+  if (suggestion.categoryName && subsetList.value?.length) {
+    const category = subsetList.value.find((item: any) => {
+      return item.name === suggestion.categoryName || item.subset_name === suggestion.categoryName
+    })
+    if (category) {
+      nextData.subset_id = category.id
+      subsetName.value = category.name || category.subset_name
+    }
+  }
+  setFormData(nextData)
+}
+
+defineExpose({
+  applyAISuggestion,
+  setFormData,
+})
 
 watch(formatData.value,(e)=>{
   emits('formData',e)

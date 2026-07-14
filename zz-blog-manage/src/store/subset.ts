@@ -28,8 +28,9 @@ export const useSubsetStore=defineStore('subset',{
   actions:{
     subsetName(e?:number){
       for(let i=0;i<this.$state.data.length;i++){
-        if(this.$state.data[i].id===e){
-          return this.$state.data[i].subset_name
+        const item = this.$state.data[i]
+        if(item && item.id===e){
+          return item.subset_name || item.name
         }
       }
       return '未分类'

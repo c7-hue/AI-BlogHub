@@ -17,6 +17,21 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 700,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('@wangeditor')) return 'editor'
+          if (id.includes('echarts')) return 'charts'
+          if (id.includes('@yike-design')) return 'ui'
+          if (id.includes('node_modules/vue') || id.includes('pinia') || id.includes('vue-router')) {
+            return 'vue-vendor'
+          }
+        },
+      },
+    },
+  },
   // css预处理器配置
   css:{
     preprocessorOptions:{
@@ -27,4 +42,14 @@ export default defineConfig({
       },
     },
   },
+  // 开发服务器代理配置
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001', // 后端服务器地址
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  }
 })

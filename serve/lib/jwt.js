@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const secret = 'rtfdgfdrewtycgd';
+const secret = process.env.JWT_SECRET || 'rtfdgfdrewtycgd';
 
 // 生成 token
 exports.generateToken = function (e) {
@@ -11,13 +11,9 @@ exports.generateToken = function (e) {
 
 // 解码/验证 token
 exports.verifyToken = function (e) {
-    let payload;
-    jwt.verify(e, secret, function (err, result) {
-        if (err) {
-            payload = 0;
-        } else {
-            payload = 1;
-        }
-    });
-    return payload;
+    try {
+        return jwt.verify(e, secret);
+    } catch (error) {
+        return null;
+    }
 };

@@ -6,7 +6,7 @@
     </yk-affix>
     <div class="editor-main">
       <slot></slot>
-       <Editor style="height: 600px; min-height: 600px; overflow-y: auto;" v-model="valueHtml"
+       <Editor style="height: 820px; min-height: 820px; overflow-y: auto;" v-model="valueHtml"
           :defaultConfig="editorConfig" :mode="mode" @onCreated="handleCreated" @onChange="onChange"/>
     </div>
   </div>
@@ -14,20 +14,21 @@
 
 <script setup lang="ts">
 import '@wangeditor/editor/dist/css/style.css' // 引入 css
-import { onBeforeUnmount, ref, shallowRef, onMounted,watch } from 'vue'
+import { onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 // @ts-ignore 无法找到声明文件，暂时忽略类型检查
-import { Editor, Toolbar,InsertFnType } from '@wangeditor/editor-for-vue'
+import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 import './style.less'
 import type { IToolbarConfig ,IEditorConfig} from '@wangeditor/editor'
 import {colors} from './colors'
 import {uploadFileApi} from '../../api/index'
-import {baseImgUrl,baseUrl} from '../../utils/env'
+import {baseImgUrl} from '../../utils/env'
 
 
 
 const emits=defineEmits(['editors'])
 
 const props = defineProps(["content"])
+type InsertFnType = (url: string, alt: string, href: string) => void
 
 // 工具栏固定
 const top = ref<boolean>(false)
@@ -128,8 +129,75 @@ const editorConfig: Partial<IEditorConfig> = {
 ;(editorConfig as any).defaultAlign = 'left'
 
 // 获取内容
+const emitEditorValue = () => {
+  emits('editors', valueHtml.value)
+}
+
 const onChange = () => {
-  emits('editors',valueHtml.value)
+  emitEditorValue()
+}
+
+const getHtml = () => {
+  return valueHtml.value || ''
+}
+
+const setHtml = (html: string) => {
+  valueHtml.value = html || ''
+  const editor = editorRef.value
+  if (editor && typeof editor.setHtml === 'function') {
+    editor.setHtml(valueHtml.value)
+  }
+  emitEditorValue()
+}
+
+const getSelectionText = () => {
+  const editor = editorRef.value
+  if (!editor || typeof editor.getSelectionText !== 'function') return ''
+  return editor.getSelectionText() || ''
+}
+
+const syncEditorValue = () => {
+  const editor = editorRef.value
+  if (editor && typeof editor.getHtml === 'function') {
+    valueHtml.value = editor.getHtml()
+  }
+  emitEditorValue()
+}
+
+const insertHtml = (html: string) => {
+  const editor = editorRef.value
+  if (!editor || !html) return
+  editor.focus()
+  if (typeof editor.dangerouslyInsertHtml === 'function') {
+    editor.dangerouslyInsertHtml(html)
+  } else if (typeof editor.insertText === 'function') {
+    editor.insertText(html)
+  }
+  syncEditorValue()
+}
+
+const insertText = (text: string) => {
+  const editor = editorRef.value
+  if (!editor || !text) return
+  editor.focus()
+  editor.insertText(text)
+  syncEditorValue()
+}
+
+const replaceSelection = (html: string) => {
+  const editor = editorRef.value
+  if (!editor || !html) return
+  editor.focus()
+  const selectedText = getSelectionText()
+  if (selectedText && typeof editor.deleteFragment === 'function') {
+    editor.deleteFragment()
+  }
+  if (typeof editor.dangerouslyInsertHtml === 'function') {
+    editor.dangerouslyInsertHtml(html)
+  } else if (typeof editor.insertText === 'function') {
+    editor.insertText(html)
+  }
+  syncEditorValue()
 }
 
 // 组件销毁时，也及时销毁编辑器
@@ -146,6 +214,15 @@ const handleCreated = (editor: any) => {
   // 移除 execCommand 调用，因为 API 可能已变更
   // console.log(editor.getAllMenuKeys);
 }
+
+defineExpose({
+  getHtml,
+  setHtml,
+  getSelectionText,
+  insertHtml,
+  insertText,
+  replaceSelection,
+})
 
 </script>
 <style lang="less" scoped>

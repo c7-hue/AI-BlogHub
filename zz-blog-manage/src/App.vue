@@ -1,10 +1,12 @@
 <template>
   <head-bar/>
   <router-view></router-view>
+  <GlobalAIAssistant/>
 </template>
 
 <script setup lang="ts">
 import HeadBar from './components/bar/HeadBar.vue';
+import GlobalAIAssistant from './components/ai/GlobalAIAssistant.vue';
 
 </script>
 

@@ -1,37 +1,48 @@
-import axios from "axios"
-import{baseUrl} from "./env"
-import {YkMessage} from "@yike-design/ui"
+import axios from 'axios'
+import { YkMessage } from '@yike-design/ui'
+import { baseUrl } from './env'
+import { clearStoredUser, getAccessToken } from './auth'
 
 const service = axios.create({
   baseURL: baseUrl,
-  timeout: 8000
+  timeout: 30000,
 })
 
-// 添加请求拦截器
 service.interceptors.request.use(
-  // 再发送请求之前做些什么
-  config => {
+  (config) => {
+    const token = getAccessToken()
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+      if (config.method === 'post' && config.data && !(config.data instanceof FormData)) {
+        config.data = { ...config.data, token: config.data.token || token }
+      }
+    }
     return config
   },
-  // 对请求错误做些什么
-  error => {
+  (error) => {
     YkMessage.error(error.message)
     return Promise.reject(error)
-  }
+  },
 )
 
-// 添加响应拦截器
 service.interceptors.response.use(
-  // 对响应数据做点什么
-  response => {
-    // 直接返回响应数据，不进行拦截
-    return response.data
+  (response) => {
+    const data = response.data
+    if (data?.code === 300) {
+      clearStoredUser()
+      YkMessage({ type: 'warning', message: '登录已过期，请重新登录' })
+      if (window.location.pathname !== '/login') window.location.assign('/login')
+    }
+    return data
   },
-  // 对响应错误做点什么
-  error => {
-    YkMessage({type:'warning',message:error.message})
+  (error) => {
+    if (error.response?.status === 401) {
+      clearStoredUser()
+      if (window.location.pathname !== '/login') window.location.assign('/login')
+    }
+    YkMessage({ type: 'warning', message: error.message })
     return Promise.reject(error)
-  }
+  },
 )
 
 export default service

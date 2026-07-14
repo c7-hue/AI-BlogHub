@@ -20,6 +20,7 @@ import { loginApi } from '../api'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../store/user'
 import { YkMessage } from '@yike-design/ui'
+import type { ApiResponse, LoginRequest, LoginUser } from '../api/types'
 
 const userStore = useUserStore()
 
@@ -35,26 +36,25 @@ const user = ref({
 // 提交
 const submit = () => {
   if(user.value.name && user.value.psw){
-    let data={
+    const data: LoginRequest = {
       name:user.value.name,
       psw:user.value.psw,
     }
     console.log('登录请求数据：', data)
-    loginApi(data).then((res:any)=>{
+    loginApi(data).then((res: ApiResponse<LoginUser>)=>{
       console.log('登录响应：', res)
       if(res && res.code == 200 && res.data){
         console.log('登录成功，数据：', res.data)
         // 保存用户信息到store
-        userStore.id = res.data.id
-        userStore.name = res.data.name
-        userStore.token = res.data.token
-        userStore.$patch(res.data)
+        userStore.setUser(res.data)
         console.log('登录成功，数据：', userStore)
         console.log(userStore.name);
         
         // 保存到localStorage
-        localStorage.setItem('user', JSON.stringify(res.data))
-        router.push('/')
+        const redirect = typeof router.currentRoute.value.query.redirect === 'string'
+          ? router.currentRoute.value.query.redirect
+          : '/'
+        router.push(redirect)
       }else if(res && res.code == 401){
         // 用户不存在，跳转到注册页面
         YkMessage({message: '用户不存在，请先注册',type: 'error',})
@@ -66,7 +66,7 @@ const submit = () => {
         console.log('登录响应格式错误：', res)
         YkMessage({message: '登录失败，请稍后重试',type: 'error',})
       }
-    }).catch((error:any)=>{
+    }).catch((error: unknown)=>{
       console.log('登录错误：', error)
       YkMessage({message: '网络错误，请检查网络连接',type: 'error',})
     })

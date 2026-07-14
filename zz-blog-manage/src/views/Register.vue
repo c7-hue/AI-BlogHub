@@ -47,7 +47,7 @@ const submit = () => {
       }else{
         YkMessage({ message: '注册失败，请稍后重试',  type: 'error'})
       }
-    }).catch((error:any)=>{
+    }).catch(()=>{
       YkMessage({ message: '网络错误，请检查网络连接',  type: 'error'})
     })
   }else{

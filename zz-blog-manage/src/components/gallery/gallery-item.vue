@@ -7,20 +7,20 @@
         </div>
         <yk-space :size="2">
           <div class="gallery-item__image--left image-div">
-        <yk-image :src="'./src/assets/images/' + props.data?.content![0]" width="78" height="78" :is-lazy="true" 
-           :preview="false" fit="cover" v-if="props.data?.content![0]"/>   
+        <yk-image :src="baseImgUrl+'/'+content![0].url" width="78" height="78" :is-lazy="true" 
+           :preview="false" fit="cover" v-if="content![0]"/>   
            </div> 
           <div class="gallery-item__image--center image-div">
-        <yk-image :src="'./src/assets/images/' + props.data?.content![1]" width="78" height="78" :is-lazy="true" 
-           :preview="false" fit="cover" v-if="props.data?.content![1]"/>    
+        <yk-image :src="baseImgUrl+'/'+content![1].url" width="78" height="78" :is-lazy="true" 
+           :preview="false" fit="cover" v-if="content![1]"/>    
           </div>
           <div class="gallery-item__image--right image-div">
-            <yk-image :src="'./src/assets/images/' + props.data?.content![2]" width="78" height="78" :is-lazy="true" 
-           :preview="false" fit="cover" v-if="props.data?.content![2]"/>   
+            <yk-image :src="baseImgUrl+'/'+content![2].url" width="78" height="78" :is-lazy="true"  
+           :preview="false" fit="cover" v-if="content![2]"/>   
           </div>
         </yk-space>
             <yk-space class="gallery-item__control" :size="4">
-              <IconFillOutline/>
+              <IconFillOutline @click="updateGallery"/>
                <yk-popconfirm trigger="click" placement="top" title="确定删除" content="删除将不可恢复" 
                 @confirm="deletegallery(props.data!.id)">
                   <IconDeleteOutline/>
@@ -28,7 +28,7 @@
             </yk-space>
       </div>
       <div style="width: 100%;">
-        <p class="gallery-item__title">{{props.data?.title}}</p>
+        <p class="gallery-item__title" v-html="title"></p>
         <div class="gallery-item__data">
           <yk-space size="l">
              <yk-space>
@@ -52,29 +52,65 @@
 
 <script setup lang="ts">
 import type { ArticleData } from '../../utils/interface';
-import {computed} from 'vue'
+import {ref,watch,computed} from 'vue'   
 import { moment } from '../../utils/moment';
-
+import {baseImgUrl} from '../../utils/env'
+import router from '../../router' 
+import {highlightKeywords} from '../../utils/highlight'
 
 type galleryItemProps={
   data?:ArticleData;
+  searchTerm?:string;
 }
-
-const props=withDefaults(defineProps<galleryItemProps>(),{
-})
+const props=defineProps<galleryItemProps>() 
 
 const emits=defineEmits(['delete','state'])
 
 // 封面地址
 const cover=computed(()=>{
-  return props.data?.cover || ''
+  return baseImgUrl+'/'+props.data?.cover || '' 
 })
 
-// 删除文章
+// 内容
+const content=computed(()=>{
+  if(props.data?.content){
+    let contentList=props.data?.content.split(' ')
+    return contentList.map((obj:string)=>JSON.parse(obj))
+  }else{
+    return ""
+  } 
+})
+
+// 删除图库 
 const deletegallery=(id:number)=>{
   emits('delete',id)
 }
+// 修改编辑图库
+const updateGallery=()=>{
+  router.push({
+    path:'/editgallery',
+    query:{
+      id:props.data!.id,
+    }
+  })
+}
 
+// 高亮标题和简介
+const introduce = ref(props.data?.introduce)
+const title = ref(props.data?.title)  
+const heightLight = (key?: string) => {
+  if (props.data?.introduce) {
+    introduce.value = highlightKeywords(props.data?.introduce, key)
+  }
+  title.value = highlightKeywords(props.data?.title!, key)
+}
+
+watch(
+  () => props.searchTerm,
+  (e) => {
+    heightLight(e)
+  }
+)
 </script>
 
 <style lang="less" scoped>

@@ -17,7 +17,7 @@ export function useLabel(){
   const selected = ref<string>('-1all')
 
   // 选择切换
-  const changeOption = (id:number|string,type:string, emit: (event: string, ...args: any[]) => void)=>{
+  const changeOption = (id:number|string,type:string, emit: (event: 'nowlabel', value: { id: number | string; type: string }) => void)=>{
     if(id+type!=selected.value){
       selected.value=id+type
       emit('nowlabel',{id,type})

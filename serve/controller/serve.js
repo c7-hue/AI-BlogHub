@@ -389,7 +389,7 @@ exports.getFile = async (req, res) => {
             code: 200,
             data: {
                 count,
-                result
+                list:result
             }
         })
     })
@@ -409,23 +409,23 @@ exports.removeFile = async(req,res)=>{
 exports.getDiaryPage = async (req, res) => {
     let data = req.body;
     let count = -1;
-    await dbModel.getDiaryPage(data.pageSize, data.nowPage, data.srchTerm).then(async (result) => {
+    await dbModel.getDiaryPage(data.pageSize, data.nowPage, data.searchTerm).then(async (result) => {
         if (data.count) {
-            let c = await dbModel.diaryCount(data.srchTerm)
+            let c = await dbModel.diaryCount(data.searchTerm)
             count = c[0].count;
         }
-        if (result.length > 0) {
-            for (let i = 0; i < result.length; i++) {
-                if (result[i].picture) {
-                    result[i].picture = result[i].picture.split(",")
-                }
-            }
-        }
+        // if (result.length > 0) {
+        //     for (let i = 0; i < result.length; i++) {
+        //         if (result[i].picture) {
+        //             result[i].picture = result[i].picture.split(",")
+        //         }
+        //     }
+        // }
         res.send({
             code: 200,
             data: {
                 count,
-                result
+                list:result
             }
         })
     })
@@ -434,7 +434,14 @@ exports.getDiaryPage = async (req, res) => {
 // 删除日记
 exports.deleteDiary = async(req,res)=>{
   let data=req.body
-  await dbModel.deleteDiary(data.id).then(()=>{
+  if(!data.diaryId){
+    res.send({
+      code:400,
+      message: '缺少日记ID'
+     })
+    return
+  }
+  await dbModel.deleteDiary(data.diaryId).then(()=>{
     res.send({
       code:200,
      })
@@ -504,10 +511,12 @@ exports.updateArticle = async(req,res)=>{
 // 新建日记createDiary
 exports.createDiary = async(req,res)=>{
   let data=req.body
-  await dbModel.createDiary(data.value).then(()=>{
+  await dbModel.createDiary(data.value).then((result)=>{
     res.send({
       code:200,
+      id:result.insertId,
      })
+     
   })
 }
 
@@ -528,9 +537,18 @@ exports.upload = async(data,res)=>{
 // 删除文件
 exports.deleteFile = async(req,res)=>{
   let data=req.body
-  await dbModel.deleteFile(data.fileId).then(async()=>{
+  if(!data.filesId){
+    res.send({
+      code:400,
+      message: '缺少文件ID'
+     })
+    return
+  }
+  await dbModel.deleteFile(data.filesId).then(async()=>{
     // 处理真实的文件删除
-    mkdir.deleteFile(data.fileUrl)
+    if(data.filesUrl){
+      mkdir.deleteFile(data.filesUrl)
+    }
     res.send({
       code:200,
      })

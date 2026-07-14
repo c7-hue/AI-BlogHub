@@ -9,7 +9,7 @@
     </div>
     <div class="edit-gallery__content">
       <div class="edit-gallery__main">
-        <EditPhoto @editors="editorData" @cover="coverData"></EditPhoto>
+        <EditPhoto @editors="editorData" @cover="coverData" :cover="defaultArticle?.[2]" :content="defaultArticle?.[0]"></EditPhoto>
       </div>
       <div class="edit-form">
          <Forms  style="width: 420px;" :classify="1" @formData="formData" :form="defaultArticle?.[1]"></Forms>  

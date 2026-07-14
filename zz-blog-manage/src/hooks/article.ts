@@ -121,16 +121,31 @@ const getData=(req:any)=>{
       }
       
       // 检查文章列表是否存在，API 返回的字段名是 result
+      let listData: ArticleData[] = [];
       if(res.list){
-        articleList.value = Array.isArray(res.list) ? [...res.list] : [];
+        listData = Array.isArray(res.list) ? [...res.list] : [];
       } else if(data.list){
-        articleList.value = Array.isArray(data.list) ? [...data.list] : [];
+        listData = Array.isArray(data.list) ? [...data.list] : [];
       } else if(res.result){
-        articleList.value = Array.isArray(res.result) ? [...res.result] : [];
+        listData = Array.isArray(res.result) ? [...res.result] : [];
       } else if(data.result){
-        articleList.value = Array.isArray(data.result) ? [...data.result] : [];
+        listData = Array.isArray(data.result) ? [...data.result] : [];
       } else {
-        articleList.value = [];
+        listData = [];
+      }
+      
+      // 如果有搜索关键词，进行前端过滤
+      if(req.searchTerm && req.searchTerm.trim()){
+        const searchTerm = req.searchTerm.toLowerCase();
+        articleList.value = listData.filter(item => {
+          return item.title.toLowerCase().includes(searchTerm) || 
+                 (item.introduce && item.introduce.toLowerCase().includes(searchTerm)) ||
+                 (item.label && item.label.some(label => label.toLowerCase().includes(searchTerm)));
+        });
+        // 更新count为过滤后的数量
+        count.value = articleList.value.length;
+      } else {
+        articleList.value = listData;
       }
     }
   }).catch((error:any)=>{
@@ -165,6 +180,7 @@ const getArticleDetail = () => {
     gainArticleApi(request).then((res: any) => {
         if (tackleCode(res.code)) {
             let content = res.data.content
+            let cover = res.data.cover
             let formData = res.data
             delete formData.id
             delete formData.views
@@ -175,7 +191,7 @@ const getArticleDetail = () => {
               formData.label=formData.label.split(',')
             }
 
-            defaultArticle.value = [content, formData]
+            defaultArticle.value = [content, formData,cover]
         }
     })
 }

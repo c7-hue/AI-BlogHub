@@ -1,6 +1,6 @@
 <template>
   <div class="head-bar">
-    <yk-space align="center" size="12" style="cursor: pointer;">
+    <yk-space align="center" size="12" style="cursor: pointer;" @click="backHome">
       <img src="@/assets/logo.png" alt="logo" class="logo" >
       <span class="name">博客管理系统</span>
     </yk-space>

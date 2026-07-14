@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: zz-blog-manage
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: zz-blog-manage/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  backend-syntax:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: serve
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: serve/package-lock.json
+      - run: npm ci
+      - run: node --check blog.js
+      - run: node --check routers/index.js
+      - run: node --check controller/ai.js

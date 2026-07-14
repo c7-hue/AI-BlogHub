@@ -3,7 +3,7 @@
     <div class="data-card__title">
       <p class="data-card__title-name">评论 {{ count }}</p>
     </div>
-    <yk-scrollbar ref="scrollbar" :height="height" style="padding:0 24px;">
+    <yk-scrollbar ref="scrollbar" :height="height" class="comment__scrollbar">
       <yk-space dir="vertical">
         <reply v-for="item in comments" :key="item.id" :content="item" @delete="deleteComment" isComment @isread="changeIsread" />  
 
@@ -138,6 +138,13 @@ onMounted(()=>{
 
   .data-card__title-name{
     padding:0 @space-xl;
+  }
+
+  &__scrollbar {
+    :deep(.yk-scrollbar__content) {
+      box-sizing: border-box;
+      padding: 12px 24px 0;
+    }
   }
 
   &__pagintion{

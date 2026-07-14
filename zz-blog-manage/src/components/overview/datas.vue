@@ -42,16 +42,17 @@
 import { ref ,onMounted,watch} from 'vue'
 
 import {LineChart,PieChart} from '../echarts/index'
-import {visit,survey} from '../../mock/data'
+import { surveyData, visitData as dashboardVisitData } from '../../data/dashboard'
 
 // 访问量
-const visitData = ref(visit.data)
+const visitData = ref(dashboardVisitData)
 
 // 数据监测
-const chartData = ref(survey.data.device)
+const chartData = ref(surveyData.device)
+const survey = { data: surveyData }
 
 const getVisit=(e:string)=>{
-  let data=visit.data;
+  let data=dashboardVisitData;
   if(e==="week"){
     data=data.slice(0,7);
   } else if(e==="month") {
@@ -64,9 +65,9 @@ const getVisit=(e:string)=>{
 
 const getChartData=(e:string)=>{
   if(e==="checkWeek"){
-    chartData.value = survey.data.device;
+    chartData.value = surveyData.device;
   } else if(e==="checkMonth") {
-    chartData.value = survey.data.website;
+    chartData.value = surveyData.website;
   }
 }
 const visitRadio = ref('week')

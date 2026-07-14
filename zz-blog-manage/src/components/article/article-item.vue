@@ -6,8 +6,8 @@
         <p class="article-item__unpublish" v-if="props.data?.state == 0">未发布</p>
       </div>
       <div style="width: 100%;">
-        <p class="article-item__title">{{props.data?.title}}</p>
-        <p class="article-item__introduce">{{props.data?.introduce}}</p>
+        <p class="article-item__title" v-html="title"></p>
+        <p class="article-item__introduce" v-html="introduce"></p>  
         <div class="article-item__data">
           <yk-space size="l">
             <yk-text type="secondary"><!-- 二级字体颜色 -->
@@ -56,10 +56,11 @@
 
 <script setup lang="ts">
 import type { ArticleData } from '../../utils/interface';
-import {computed} from 'vue'
+import {computed,ref,watch} from 'vue'
 import { useSubsetStore } from '../../store/subset';
 import { moment } from '../../utils/moment';
 import {useRouter} from 'vue-router'
+import { highlightKeywords } from '../../utils/highlight'
 
 const router=useRouter()
 
@@ -68,6 +69,7 @@ const subsetStore=useSubsetStore()
 
 type ArticleItemProps={
   data?:ArticleData;
+  searchTerm?:string; 
 }
 
 const props=withDefaults(defineProps<ArticleItemProps>(),{
@@ -99,6 +101,23 @@ const updateArticle=()=>{
     }
   })
 }
+
+// 高亮标题和简介
+const introduce = ref(props.data?.introduce)
+const title = ref(props.data?.title)    
+const heightLight = (key?: string) => {
+  if (props.data?.introduce) {
+    introduce.value = highlightKeywords(props.data?.introduce, key)
+  }
+  title.value = highlightKeywords(props.data?.title!, key)
+}
+
+watch(
+  () => props.searchTerm,
+  (e) => {
+    heightLight(e)
+  }
+)
 </script>
 
 <style lang="less" scoped>

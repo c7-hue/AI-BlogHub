@@ -1,13 +1,17 @@
 import fetch from "../utils/axios"
+import type { ApiResponse, LoginRequest, LoginUser, RegisterRequest } from './types'
 
 // 是否有注册
-export const isRegisterApi = (data: object) =>fetch.post('/isRegister',data)
+export const isRegisterApi = (data: object) =>
+  fetch.post<ApiResponse, ApiResponse, object>('/isRegister', data)
 
 // 用户注册/register
-export const registerApi = (data: any) => fetch.post('/register',data)
+export const registerApi = (data: RegisterRequest) =>
+  fetch.post<ApiResponse, ApiResponse, RegisterRequest>('/register', data)
 
 // 用户登录/login
-export const loginApi = (data: any) => fetch.post('/login',data)    
+export const loginApi = (data: LoginRequest) =>
+  fetch.post<ApiResponse<LoginUser>, ApiResponse<LoginUser>, LoginRequest>('/login', data)
 
 // 获取总览数据 overview
 export const overviewApi = (data: object) => fetch.post('/overview',data)
@@ -77,3 +81,18 @@ export const gainArticleApi = (data: object) => fetch.post('/gainArticle',data)
 
 // 删除文件/deleteFile
 export const deleteFileApi = (data: object) => fetch.post('/deleteFile',data)
+
+// 新建日记/createDiary
+export const createDiaryApi = (data: object) => fetch.post('/createDiary',data) 
+
+// 获取日记/diary
+export const diaryApi = (data: object) => fetch.post('/diary',data)
+
+// 删除日记/deleteDiary
+export const deleteDiaryApi = (data: object) => fetch.post('/deleteDiary',data)
+
+// 获取文件getFile
+export const getFileApi = (data: object) => fetch.post('/getFile',data) 
+
+// 移动文件/removeFile
+export const removeFileApi = (data: object) => fetch.post('/removeFile',data) 

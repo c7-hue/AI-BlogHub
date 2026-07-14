@@ -4,10 +4,10 @@
       <div class="diary-item_toptitle">
         <yk-space dir="vertical" :size="4">
            <p class="diary-item_title">
-              {{ props.data?.title }}
+            <span v-html="title"></span>  
               <!-- 调用方法获取图标 -->
-             <img v-if="props.data?.weatherId !== undefined" 
-                  :src="getWeatherIcon(props.data?.weatherId)" 
+             <img v-if="props.data?.weather_id !== undefined" 
+                  :src="getWeatherIcon(props.data?.weather_id)"   
                   style="width: 16px; height: 16px; margin-left: 8px;">
            </p>
            <yk-text type="third">{{ props.data?.moment ? momentl(props.data.moment) : '' }}</yk-text>
@@ -17,9 +17,9 @@
                   <IconDeleteOutline class="diary-item__delete"/>
          </yk-popconfirm>
       </div>
-      <yk-text>{{ props.data?.content }}</yk-text>
+      <yk-text v-html="content"></yk-text>  
       <div  class="images">
-      <yk-image-preview-group :src-list="pictures" width="80px" height="80px" fit="cover">
+      <yk-image-preview-group :src-list="images" width="80px" height="80px" fit="cover">
       </yk-image-preview-group>
       </div>
     </yk-space>
@@ -28,27 +28,31 @@
 
 <script setup lang="ts">
 import type { DiaryDate } from '../../utils/interface';
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'  
 import { momentl } from '../../utils/moment';
 import { weather } from '../../utils/weather';
-
+import {baseImgUrl} from '../../utils/env'
+import {highlightKeywords} from '../../utils/highlight'
 type diaryItemProps={
   data?:DiaryDate;
+  searchTerm?:string;
 }
 
 const props=withDefaults(defineProps<diaryItemProps>(),{
 })
 
-// 图片处理 (保持原样)
-const pictures = computed(() => {
+// 图片处理
+const images = computed(() => {
   if (props.data?.picture) {
-    let arr = JSON.parse(JSON.stringify(props.data?.picture))
+    // 深拷贝
+    let arr = props.data?.picture.split(" ").map((obj: string) => JSON.parse(obj))
+
+    let pic = []
     for (let i = 0; i < arr.length; i++) {
-      arr[i] = './src/assets/images/' + arr[i]
+      pic.push(baseImgUrl + '/' + arr[i].url)
     }
-    return arr
+    return pic
   }
-  return undefined
 })
 
 const emits=defineEmits(['delete'])
@@ -67,6 +71,24 @@ const getWeatherIcon = (id: number | string | undefined) => {
   
   return item ? item.icon : undefined
 }
+
+// 高亮标题和内容
+const content = ref(props.data?.content)
+const title = ref(props.data?.title)
+
+const heightLight = (key?: string) => {
+  if (props.data?.content) {
+    content.value = highlightKeywords(props.data?.content, key)
+  }
+  title.value = highlightKeywords(props.data?.title!, key)
+}
+
+watch(
+  () => props.searchTerm, 
+  (e) => {
+    heightLight(e)
+  }
+)
 
 </script>
 
@@ -117,6 +139,11 @@ const getWeatherIcon = (id: number | string | undefined) => {
   }
   .yk-image{
     border-radius: 8px;
+  }
+}
+.diary-item{
+  .highlight{
+    font-weight: 600; 
   }
 }
 </style>

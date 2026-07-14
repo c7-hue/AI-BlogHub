@@ -37,10 +37,11 @@ export const navList = [
     bgColor:'180deg,#2b5aedcc 0%,#2B5AED 100%',//背景渐变颜色
   },{
     name: '设置',
-    path: '/install',
+    path: '/setting',
     icon: IconSettingsFill,
     bgColor:'180deg,#2b5aedcc 0%,#2B5AED 100%',//背景渐变颜色
   }
+  
 ]
 
 // 总览数据

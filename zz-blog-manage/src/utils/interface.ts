@@ -19,6 +19,7 @@ export type ReplyData={
 export interface SubsetData{
   id:number | string;
   name:string|number;
+  subset_name?: string | number;
   value:number;
   moment?:string;
 }
@@ -27,10 +28,11 @@ export interface SubsetData{
 export interface FileData{
   id:number;
   url:string;//地址路径
-  fileName:string;//文件名
+  file_name:string;//文件名
   format:string;//格式
-  subsetId:number;//所属类型
+  subset_id:number;//所属类型
   selected?:boolean;//是否选择
+  moment:Date;//时间
 }
 
 // 标签
@@ -53,17 +55,17 @@ export interface ArticleData{
   state:number;//状态0未发布
   comment:number;
   praise:number;//点赞次数
-  content?:string | string[];//内容
+  content?:string;//内容
 }
 
 // 日记
 export interface DiaryDate {
   id: number;
-  title: string;
+  title?: string;
   moment: Date; //时间
-  weatherId: number; //天气
-  content: string;
-  picture?: string[];
+  weather_id: number; //天气
+  content?: string;
+  picture?: string;
 }
 
 // 表单数据
@@ -71,7 +73,7 @@ export interface FormData {
   classify?:number;//分类
   title?:string;//标题
   subset_id?:number;//分组id
-  label?:number|string[];//标签   
+  label?:string[];//标签   
   introduce?:string;//简介
   cover?:string;//封面地址  
 }

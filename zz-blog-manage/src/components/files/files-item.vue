@@ -24,8 +24,7 @@
       </div>
     </div>
     <div class="file-item__name">
-    <p class="file-item__name-file">{{ $props.data?.fileName }}</p>
-    <p>.{{ $props.data?.format }}</p>
+    <p class="file-item__name-file">{{ $props.data?.url }}</p>
     </div>
   </div>
 </template>
@@ -36,6 +35,8 @@ import type { FileData } from '../../utils/interface';
 import {computed} from 'vue'
 import {useSubsetStore} from '../../store/subset';
 import './files.less'
+import {baseImgUrl} from '../../utils/env'
+
 //store
 const subsetStore = useSubsetStore();
 
@@ -49,11 +50,11 @@ const props=withDefaults(defineProps<FileItemProps>(),{
 const emits=defineEmits(['changeSubsetId','delete','selected'])
 // 图片路径
 const url=computed(()=>{
-  return "/src/assets/images/"+props.data?.url
+  return baseImgUrl+"/"+props.data?.url
 })
 
 //分类选择
-const subsetSelectedId=ref<number | string>(props.data?.subsetId);
+const subsetSelectedId=ref<number | string>(props.data?.subset_id);
 //切换 分组
 const changeOption=(e:number | string)=>{
   subsetSelectedId.value=e;
@@ -64,7 +65,7 @@ function cancel() {
 }
 function confirm() {
   //如果当前选择与之前不同时
-  if(subsetSelectedId.value!=props.data?.subsetId){
+  if(subsetSelectedId.value!=props.data?.subset_id){
     let data={
       id:props.data?.id,
       subsetId:subsetSelectedId.value,
@@ -75,7 +76,7 @@ function confirm() {
 }
 //删除
 const deleteFile=()=>{
-  emits('delete',props.data?.id);
+  emits('delete',props.data?.id,props.data?.url);
 }
 //选择
 const checkFile=(event: Event)=>{

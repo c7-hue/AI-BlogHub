@@ -7,7 +7,15 @@ export const useUserStore = defineStore('user',{
     token:'',
   }),
   persist: {
-    storage: sessionStorage,
+    storage: localStorage,
+  },
+  actions: {
+    setUser(user: { id: number; name: string; token: string }) {
+      this.$patch(user)
+    },
+    clearUser() {
+      this.$reset()
+    },
   },
 })
  
