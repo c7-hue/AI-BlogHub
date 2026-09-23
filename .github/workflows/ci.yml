@@ -10,14 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: zz-blog-manage
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: zz-blog-manage/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm test
       - run: npm run build
@@ -26,14 +26,14 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: serve
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: serve/package-lock.json
+          cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: node --check blog.js
       - run: node --check routers/index.js

@@ -1,5 +1,5 @@
 {
-  "name": "serve",
+  "name": "backend",
   "version": "1.0.0",
   "main": "blog.js",
   "directories": {
