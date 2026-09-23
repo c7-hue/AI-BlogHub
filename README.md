@@ -1,5 +1,7 @@
 # 个人博客管理系统
 
+[![CI](https://github.com/c7-hue/AI-BlogHub/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/c7-hue/AI-BlogHub/actions/workflows/ci.yml)
+
 一个前后端分离的个人博客管理系统，支持文章/图库管理、日记、文件管理、评论私信、数据总览，并内置 DeepSeek AI 写作助手。
 
 ## 项目结构
