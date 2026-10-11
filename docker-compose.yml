@@ -1,0 +1,49 @@
+# AI-BlogHub 一键部署:前端 Nginx + 后端 Node + MySQL
+# 用法:先在同目录创建 .env(照抄 .env.example 改密码),然后:
+#   docker compose up -d --build
+
+services:
+  frontend:
+    build: ./frontend
+    container_name: bloghub-frontend
+    ports:
+      - "80:80"            # 80 被占用就改成 "8080:80",访问时用 http://IP:8080
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: bloghub-backend
+    env_file: .env         # DEEPSEEK_API_KEY / JWT_SECRET 从这里读
+    environment:
+      TZ: Asia/Shanghai
+      PORT: 3001
+      DB_HOST: db          # compose 的服务名,容器之间直接用名字互访
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_NAME: xxblog
+    depends_on:
+      - db
+    restart: unless-stopped   # MySQL 还没就绪时后端会崩,会自动重试拉起,前几次重启属正常
+    volumes:
+      - backend_data:/app/data    # 上传的图片持久化,删容器不丢
+
+  db:
+    image: mysql:8.0
+    container_name: bloghub-db
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: xxblog     # 库会自动建好;表由后端启动时自动创建
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql    # 数据库文件持久化,删容器不丢
+    restart: unless-stopped
+    # 故意不写 ports:3306 —— 数据库只在容器内网访问,不暴露到公网
+
+volumes:
+  mysql_data:
+  backend_data:

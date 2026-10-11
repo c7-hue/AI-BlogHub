@@ -1,0 +1,6 @@
+node_modules
+.env
+*.log
+test_*.js
+test.txt
+data/blog.db
