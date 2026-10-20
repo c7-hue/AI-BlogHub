@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zhang | 前端开发</title>
+  <meta name="description" content="Zhang 的个人主页:前端开发工程师,项目作品集与技术博客。">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 顶部导航 -->
+  <header class="nav">
+    <span class="logo">zzlabai.top</span>
+    <nav>
+      <a href="#projects">项目</a>
+      <a href="https://github.com/c7-hue" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+
+  <!-- 自我介绍 -->
+  <section class="hero">
+    <img class="avatar" src="assets/avatar.jpg" alt="Zhang 的头像">
+    <h1>你好,我是 Zhang</h1>
+    <p class="subtitle">全栈开发工程师(前端方向) · Vue / Node / Docker</p>
+    <p class="intro">
+      用 Vue 和 TypeScript 构建界面,用 Node 和 MySQL 撑起服务,
+      也喜欢亲手把项目容器化、部署到服务器上跑起来。
+      这里是我的作品集——下面两个项目,从写代码到上线,都是我亲手完成的。
+    </p>
+    <div class="stack">
+      <span>Vue 3</span><span>TypeScript</span><span>Node.js</span><span>Express</span>
+      <span>MySQL</span><span>Redis</span><span>Docker</span><span>Nginx</span>
+    </div>
+  </section>
+
+  <!-- 项目卡片 -->
+  <section id="projects" class="projects">
+    <h2>我的项目</h2>
+    <div class="cards">
+
+      <article class="card">
+        <img class="cover" src="assets/blog-cover.png" alt="AI-BlogHub 博客项目封面">
+        <div class="card-body">
+          <h3>AI-BlogHub · 个人技术博客</h3>
+          <p>
+            Vue 3 + Express + MySQL 的个人博客,集成 AI 写作助手。
+            Docker 三容器部署,Nginx 反向代理与 HTTPS,公网可访问。
+          </p>
+          <div class="tags">
+            <span>Vue 3</span><span>Express</span><span>MySQL</span><span>Docker</span><span>Nginx</span>
+          </div>
+          <div class="links">
+            <a class="btn" href="https://blog.zzlabai.top" target="_blank" rel="noopener">访问网站</a>
+            <a class="btn ghost" href="https://github.com/c7-hue/AI-BlogHub" target="_blank" rel="noopener">查看源码</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <img class="cover" src="assets/edu-cover.png" alt="智途好学在线教育平台封面">
+        <div class="card-body">
+          <h3>智途好学 · 在线教育平台</h3>
+          <p>
+            在线视频课程平台:课程浏览、下单、学习记录、实时弹幕(Socket.IO)与学习排行榜。
+            Redis 缓存架构,uni-app 多端(H5 / 小程序)。
+          </p>
+          <div class="tags">
+            <span>uni-app</span><span>Vue 3</span><span>Node.js</span><span>Redis</span><span>Socket.IO</span>
+          </div>
+          <div class="links">
+            <a class="btn" href="https://edu.zzlabai.top" target="_blank" rel="noopener">访问网站</a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 zzlabai.top · Zhang</p>
+    <!-- 已备案,真实备案号(2026-10-20) -->
+    <p><a href="https://beian.miit.gov.cn" target="_blank" rel="noopener">苏ICP备2026078874号</a></p>
+  </footer>
+
+</body>
+</html>
