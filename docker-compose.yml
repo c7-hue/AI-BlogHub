@@ -8,9 +8,12 @@ services:
     container_name: bloghub-frontend
     ports:
       - "80:80"            # 80 被占用就改成 "8080:80",访问时用 http://IP:8080
+      - "443:443"
     depends_on:
       - backend
     restart: unless-stopped
+    volumes:
+      - /www/certs:/etc/nginx/certs:ro
 
   backend:
     build: ./backend
@@ -23,11 +26,26 @@ services:
       DB_USER: root
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       DB_NAME: xxblog
+      AI_SERVICE_URL: http://ai-service:3002
     depends_on:
       - db
     restart: unless-stopped   # MySQL 还没就绪时后端会崩,会自动重试拉起,前几次重启属正常
     volumes:
       - backend_data:/app/data    # 上传的图片持久化,删容器不丢
+
+  ai-service:
+    build: ./ai-service
+    container_name: bloghub-ai
+    env_file: .env         # 额外需要 EMBEDDING_API_KEY,没配也能启动,只是检索不可用
+    environment:
+      TZ: Asia/Shanghai
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_NAME: xxblog
+    depends_on:
+      - db
+    restart: unless-stopped
 
   db:
     image: mysql:8.0

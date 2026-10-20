@@ -1,6 +1,7 @@
 const dbModel = require('../model/db_model')
 const jwt = require('../lib/jwt')
-const mkdir = require('../lib/mkdir') 
+const mkdir = require('../lib/mkdir')
+const aiIndex = require('../lib/aiIndex')
 
 // 是否注册
 exports.isRegister = async(req,res)=>{
@@ -227,6 +228,7 @@ exports.getArticle = async (req, res) => {
 exports.changeArticleState = async(req,res)=>{
   let data=req.body
   await dbModel.changeArticleState(data.id,data.state).then((result)=>{
+    aiIndex.indexArticle(data.id)
     res.send({
       code:200,
      })
@@ -240,6 +242,7 @@ exports.deleteArticle = async(req,res)=>{
     // 支持 articleId 和 id 两种参数名
     const articleId = data.articleId || data.id
     await dbModel.deleteArticle(articleId)
+    aiIndex.removeArticleIndex(articleId)
     res.send({
       code:200,
      })
@@ -469,6 +472,7 @@ exports.createArticle = async(req,res)=>{
       data.label = reqData.label.join(',')
     }
     await dbModel.createArticle(data).then((result)=>{
+      aiIndex.indexArticle(result.insertId)
       res.send({
         code:200,
         data:result.insertId,
@@ -502,6 +506,7 @@ exports.updateArticle = async(req,res)=>{
     data.value.label = data.value.label.join(',')
   }
   await dbModel.updateArticle(data.articleId,data.value).then(()=>{
+    aiIndex.indexArticle(data.articleId)
     res.send({
       code:200,
      })

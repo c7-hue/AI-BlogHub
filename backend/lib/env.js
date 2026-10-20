@@ -37,7 +37,9 @@ exports.loadEnv = () => {
   envContent.split(/\r?\n/).forEach((line) => {
     const parsed = parseEnvLine(line)
 
-    if (parsed && !process.env[parsed.key]) {
+    // 项目 .env 优先于系统环境变量,避免机器上遗留的旧 key 抢占
+    // (Docker 容器内没有 .env 文件,compose 注入的环境变量不受影响)
+    if (parsed) {
       process.env[parsed.key] = parsed.value
     }
   })

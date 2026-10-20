@@ -10,6 +10,7 @@
 博客文档/
 ├── frontend/    # 前端管理端（Vue 3 + TypeScript + Vite）
 ├── backend/     # 后端服务（Node.js + Express + MySQL）
+├── ai-service/  # AI 微服务（Python + FastAPI：RAG 检索增强问答 / Embedding 向量化）
 └── .github/     # CI 工作流
 ```
 
@@ -96,6 +97,7 @@ node seed_system_comments.js    # 写入系统演示评论
 - **文件管理**：上传（Multer）、分类、移动、删除
 - **评论 / 私信**：已读管理、删除
 - **AI 助手**：文章 AI 写作、版本管理、全局流式对话（DeepSeek）
+- **RAG 问答**（ai-service）：基于博客文章的检索增强问答——文章分块向量化入库，提问时余弦相似度检索 Top-5 片段作为上下文，回答自动标注来源、检索不到时明确说明；详见 [ai-service/README.md](ai-service/README.md)
 
 ## 接口鉴权
 
