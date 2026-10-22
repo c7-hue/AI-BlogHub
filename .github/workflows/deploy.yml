@@ -1,0 +1,20 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]   # 只有推到 main 分支才触发
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /www/AI-BlogHub
+            git pull
+            docker compose up -d --build
