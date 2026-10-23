@@ -9,8 +9,10 @@
       <yk-badge is-dot :hidden="isread">
       <IconEmailFill style="font-size: 20px;" @click="changeActive(true)"/>
     </yk-badge>
-    <!-- 头像 -->
-    <yk-avatar img-url="https://www.huohuo90.com:3003/user/6353b034dd4b583975e77fbe.png"></yk-avatar>
+    <!-- 头像：优先显示用户上传的头像，没有则显示账号名首字 -->
+    <yk-avatar v-if="userStore.avatar" :img-url="avatarFullUrl"></yk-avatar>
+    <yk-avatar v-else-if="userStore.name">{{ userStore.name.slice(0, 1) }}</yk-avatar>
+    <yk-avatar v-else img-url="https://www.huohuo90.com:3003/user/6353b034dd4b583975e77fbe.png"></yk-avatar>
     <div><yk-theme/></div>
     <yk-button @click="logout">退出</yk-button>
     </yk-space>
@@ -19,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref} from 'vue'
+import {computed, onMounted, ref} from 'vue'
 import {useRouter} from 'vue-router'
 import { IconEmailFill } from '@yike-design/ui/es/components/svg-icon';
 import {Information} from '../reply/index'
@@ -27,11 +29,30 @@ import {isRegisterApi} from '../../api/index'
 import {useCode} from '../../hooks/code'
 import {useUserStore} from '../../store/user'
 import {noreadMessageApi} from '../../api/index'
+import {baseUrl} from '@/utils/env'
+import {getUserInfoApi} from '../../api/index'
 
 const userStore = useUserStore()
 const router = useRouter();
 
 const active = ref<boolean>(false)
+
+// 头像完整地址（数据库存的是文件名，需拼上服务地址）
+const avatarFullUrl = computed(() => `${baseUrl}/files/${userStore.avatar}`)
+
+// 拉取用户资料，同步头像/昵称
+const loadInfo = () => {
+  getUserInfoApi({ token: userStore.token }).then((res:any)=>{
+    if(res.code==200){
+      userStore.setUser({
+        id: res.data.id,
+        name: res.data.name,
+        nickname: res.data.nickname,
+        avatar: res.data.avatar,
+      })
+    }
+  })
+}
 
 // code验证
 const {tackleCode} = useCode()
@@ -88,6 +109,7 @@ const logout =()=>{
 onMounted(()=>{
   isRegister()
   noreadMg()
+  loadInfo()
 })
 
 </script>

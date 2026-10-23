@@ -66,6 +66,9 @@ let users =
       id INT NOT NULL AUTO_INCREMENT,
       name VARCHAR(100) NOT NULL COMMENT '用户名',
       password varchar(100) not null comment '密码',
+      avatar varchar(255) default '' comment '头像',
+      nickname varchar(50) default '' comment '昵称（与登录账号无关）',
+      email varchar(100) default '' comment '邮箱',
       moment varchar(100) not null comment '时间',
       primary key(id)
       );`
@@ -192,6 +195,18 @@ const createTable=(sql)=>{
 async function create(){
   await createDatabases(xxblog)
   await createTable(users)
+  // 旧库兼容：为已存在的 users 表补充 avatar / email 字段
+  const columns = await query2('show columns from users', [])
+  const columnNames = columns.map((item) => item.Field)
+  if(!columnNames.includes('avatar')){
+    await query2("alter table users add column avatar varchar(255) default '' comment '头像'", [])
+  }
+  if(!columnNames.includes('nickname')){
+    await query2("alter table users add column nickname varchar(50) default '' comment '昵称（与登录账号无关）'", [])
+  }
+  if(!columnNames.includes('email')){
+    await query2("alter table users add column email varchar(100) default '' comment '邮箱'", [])
+  }
   await createTable(subset)
   await createTable(file)
   await createTable(article)

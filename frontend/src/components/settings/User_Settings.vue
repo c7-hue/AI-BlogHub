@@ -1,16 +1,17 @@
 <template>
-    <yk-title :level="3">用户设置</yk-title>    
+    <yk-title :level="3">用户设置</yk-title>
     <yk-space size="l" style="width: 100%;">  <!--//dir="vertical" 垂直方向排列  -->
       <!-- 左边部分 -->
        <yk-space class="user-settings">
         <yk-space class="user-settings__info">
-            <yk-image src="https://www.huohuo90.com:3005/logo/yike.png" style="margin:20px" width="100"height="100":is-lazy="true"></yk-image> 
+            <yk-avatar v-if="avatarUrl" :img-url="avatarUrl" size="100" style="margin:20px"></yk-avatar>
+            <yk-image v-else src="https://www.huohuo90.com:3005/logo/yike.png" style="margin:20px" width="100"height="100":is-lazy="true"></yk-image>
            <yk-space dir="vertical" size="0">
-             <yk-title :level="4" size="0">张张</yk-title>
-              <yk-text type="third">3077258497@qq.com</yk-text>
-              <yk-text style="padding-top: 10px;">特征码</yk-text>  
-              <yk-space size="0" class="user-settings__code"> 
-                <yk-text :strong="true" type="primary" style="font-size: 22px;">{{ changeCode }}</yk-text>  
+             <yk-title :level="4" size="0">{{ nickname || userStore.name || '未设置昵称' }}</yk-title>
+              <yk-text type="third">{{ email || '未设置邮箱' }}</yk-text>
+              <yk-text style="padding-top: 10px;">特征码</yk-text>
+              <yk-space size="0" class="user-settings__code">
+                <yk-text :strong="true" type="primary" style="font-size: 22px;">{{ changeCode }}</yk-text>
                 <yk-popconfirm
                     title="修改特征码" placement="bottom" :arrow="false" @cancel="cancel" @confirm="confirm"
                   >
@@ -25,14 +26,14 @@
            </yk-space>
         </yk-space>
         <yk-space class="user-settings__btn">
-            <yk-button type="secondary">修改个人资料</yk-button>
+            <yk-button type="secondary" @click="showModify">修改个人资料</yk-button>
             <yk-button>进入微博</yk-button>
         </yk-space>
        </yk-space>
 
        <!-- 右边部分 -->
        <yk-space class="user-settings__right" dir="vertical">
-          <yk-space class="user-settings__right__progress" dir="vertical" > 
+          <yk-space class="user-settings__right__progress" dir="vertical" >
             <yk-space dir="vertical">
               <yk-space dir="horizontal" align="center" justify="between" style="width: 100%;">
                 <yk-text type="third">图片空间</yk-text>
@@ -48,19 +49,33 @@
               </yk-space>
               <yk-progress :showText="false"></yk-progress>
             </yk-space>
-            
+
           </yk-space>
-          <yk-button style="position: absolute;bottom: 5px; right: 10px;"size="s">空间扩容</yk-button> 
+          <yk-button style="position: absolute;bottom: 5px; right: 10px;"size="s">空间扩容</yk-button>
        </yk-space>
 
     </yk-space>
+    <!-- 修改个人资料弹窗 -->
+    <ModifyPersonalInformation ref="modifyRef" @updated="onUpdated"/>
 </template>
 
 <script setup lang="ts">
-import { getCurrentInstance } from 'vue'
-import { ref } from 'vue'
+import { getCurrentInstance, onMounted, ref } from 'vue'
+import { baseUrl } from '@/utils/env'
+import { getUserInfoApi } from '@/api/index'
+import { useUserStore } from '@/store/user'
+import { useCode } from '@/hooks/code'
+import ModifyPersonalInformation from './Modify_personal_information.vue'
+
+const userStore = useUserStore()
+const { tackleCode } = useCode()
 
 const changeCode = ref('111111111')  // 新增：存储特征码
+
+const email = ref('')
+const avatarUrl = ref('')
+const nickname = ref('')
+const modifyRef = ref<InstanceType<typeof ModifyPersonalInformation>>()
 
 const proxy: any = getCurrentInstance()?.proxy
 
@@ -69,6 +84,31 @@ function cancel() {
 function confirm() {
   proxy.$message({ type: 'primary', message: '修改成功' })
 }
+
+// 打开修改资料弹窗
+const showModify = () => {
+  modifyRef.value?.open()
+}
+
+// 弹窗保存成功后刷新展示
+const onUpdated = (data: { nickname: string; avatar: string; email: string }) => {
+  email.value = data.email
+  nickname.value = data.nickname
+  avatarUrl.value = data.avatar ? `${baseUrl}/files/${data.avatar}` : ''
+}
+
+// 初始化拉取资料
+const loadInfo = () => {
+  getUserInfoApi({ token: userStore.token }).then((res: any) => {
+    if (tackleCode(res.code)) {
+      email.value = res.data.email
+      nickname.value = res.data.nickname
+      avatarUrl.value = res.data.avatar ? `${baseUrl}/files/${res.data.avatar}` : ''
+    }
+  })
+}
+
+onMounted(loadInfo)
 </script>
 
 <style lang="less" scoped>

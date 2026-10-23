@@ -93,6 +93,81 @@ exports.login = async(req,res)=>{
   })
 }
 
+// 获取用户资料
+exports.getUserInfo = async(req,res)=>{
+  const tokenInfo = jwt.verifyToken(req.authToken)
+  if(!tokenInfo){
+    res.send({code:300, message:'token无效'})
+    return
+  }
+  await dbModel.getUserInfo(tokenInfo.id).then((result)=>{
+    if(result.length==0){
+      res.send({code:400, message:'用户不存在'})
+      return
+    }
+    res.send({
+      code:200,
+      data:{
+        id:result[0].id,
+        name:result[0].name,
+        nickname:result[0].nickname || '',
+        avatar:result[0].avatar || '',
+        email:result[0].email || ''
+      }
+    })
+  }).catch(()=>{
+    res.send({code:500, message:'获取用户资料失败'})
+  })
+}
+
+// 修改用户资料（头像/昵称/邮箱，不涉及登录账号）
+exports.updateUserInfo = async(req,res)=>{
+  const data = req.body
+  const tokenInfo = jwt.verifyToken(req.authToken)
+  if(!tokenInfo){
+    res.send({code:300, message:'token无效'})
+    return
+  }
+  await dbModel.getUserInfo(tokenInfo.id).then(async (result)=>{
+    if(result.length==0){
+      res.send({code:400, message:'用户不存在'})
+      return
+    }
+    const update = {}
+    // 昵称：允许传空字符串（清空昵称，展示时回退账号名）
+    if(typeof data.nickname == 'string'){
+      update.nickname = data.nickname.trim()
+    }
+    // 头像：允许传空字符串（清空头像）
+    if(typeof data.avatar == 'string'){
+      update.avatar = data.avatar
+    }
+    // 邮箱：允许传空字符串
+    if(typeof data.email == 'string'){
+      update.email = data.email.trim()
+    }
+    if(Object.keys(update).length==0){
+      res.send({code:400, message:'没有需要修改的内容'})
+      return
+    }
+    await dbModel.updateUserInfo({id:result[0].id, data:update}).then(()=>{
+      res.send({
+        code:200,
+        message:'修改成功',
+        data:{
+          id:result[0].id,
+          name:result[0].name,
+          nickname:update.nickname !== undefined ? update.nickname : (result[0].nickname || ''),
+          avatar:update.avatar !== undefined ? update.avatar : (result[0].avatar || ''),
+          email:update.email !== undefined ? update.email : (result[0].email || '')
+        }
+      })
+    })
+  }).catch(()=>{
+    res.send({code:500, message:'修改用户资料失败'})
+  })
+}
+
 //获取评论
 exports.getComment = async (req, res) => {
     let data = req.body;

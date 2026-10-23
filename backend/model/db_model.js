@@ -30,6 +30,18 @@ exports.login=(name)=>{
   return db.query2(_sql, [name])
 }
 
+// 获取用户信息
+exports.getUserInfo=(id)=>{
+  let _sql = 'select id, name, nickname, avatar, email, moment from users where name=?'
+  return db.query2(_sql, [id])
+}
+
+// 更新用户资料（头像/昵称/邮箱）
+exports.updateUserInfo=(value)=>{
+  let _sql = 'update users set ? where id=?'
+  return db.query2(_sql, [value.data, value.id])
+}
+
 // 获取评论
 exports.getCommentPage = (pageSize,nowPage) => {
   console.log('getCommentPage called with pageSize:', pageSize, 'nowPage:', nowPage);

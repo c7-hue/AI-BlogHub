@@ -13,6 +13,12 @@ export const registerApi = (data: RegisterRequest) =>
 export const loginApi = (data: LoginRequest) =>
   fetch.post<ApiResponse<LoginUser>, ApiResponse<LoginUser>, LoginRequest>('/login', data)
 
+// 获取用户资料
+export const getUserInfoApi = (data: object) => fetch.post('/getUserInfo', data)
+
+// 修改用户资料（头像/昵称/邮箱）
+export const updateUserInfoApi = (data: object) => fetch.post('/updateUserInfo', data)
+
 // 获取总览数据 overview
 export const overviewApi = (data: object) => fetch.post('/overview',data)
 

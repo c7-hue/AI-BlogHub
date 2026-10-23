@@ -42,6 +42,16 @@ module.exports = function(app){
     ai.chatWithAI(req,res)//调用AI聊天方法
   })
 
+  // 获取用户资料
+  app.post('/getUserInfo',(req,res)=>{
+    serve.getUserInfo(req,res)//调用获取用户资料方法
+  })
+
+  // 修改用户资料（头像/昵称/邮箱）
+  app.post('/updateUserInfo',(req,res)=>{
+    serve.updateUserInfo(req,res)//调用修改用户资料方法
+  })
+
   // AI流式聊天接口
   app.post('/ai/chat-stream',(req,res)=>{
     ai.chatWithAIStream(req,res)//调用AI流式聊天方法
