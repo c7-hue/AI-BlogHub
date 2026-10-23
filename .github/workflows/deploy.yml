@@ -3,6 +3,7 @@ name: Deploy
 on:
   push:
     branches: [main]   # 只有推到 main 分支才触发
+  workflow_dispatch:   # 允许在 Actions 页面/ API 手动触发
 
 jobs:
   deploy:
