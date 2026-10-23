@@ -42,7 +42,8 @@ uvicorn main:app --port 3002
 ## 测试
 
 ```bash
-pytest test_rag.py -v
+pytest test_rag.py -v        # 纯函数单元测试(9 个)
+python eval_rag.py           # 30 条测试集检索质量评测(RAG 向量 vs 关键词基线,输出 hit@1/hit@3)
 ```
 
 ## Docker
