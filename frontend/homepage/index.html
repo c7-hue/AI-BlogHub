@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zhang | 前端开发</title>
-  <meta name="description" content="Zhang 的个人主页:前端开发工程师,项目作品集与技术博客。">
+  <title>Zhang | 全栈开发工程师</title>
+  <meta name="description" content="Zhang 的个人主页:全栈开发工程师,前端 React / Vue + TypeScript,后端 Node.js / Python + MySQL,曾实习于苏州斓舟智能科技,参与 AI 智能体教育平台 LeBotWorld 开发。项目作品集与技术博客。">
+  <link rel="icon" type="image/png" href="assets/logo-zzz.png">
+  <link rel="apple-touch-icon" href="assets/logo-zzz.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,6 +15,7 @@
   <header class="nav">
     <span class="logo">zzlabai.top</span>
     <nav>
+      <a href="#internship">实习经历</a>
       <a href="#projects">项目</a>
       <a href="https://github.com/c7-hue" target="_blank" rel="noopener">GitHub</a>
     </nav>
@@ -22,16 +25,51 @@
   <section class="hero">
     <img class="avatar" src="assets/avatar.jpg" alt="Zhang 的头像">
     <h1>你好,我是 Zhang</h1>
-    <p class="subtitle">全栈开发工程师(前端方向) · Vue / Node / Docker</p>
+    <p class="subtitle">全栈开发工程师 · React / Vue / Node.js / Python</p>
     <p class="intro">
-      用 Vue 和 TypeScript 构建界面,用 Node 和 MySQL 撑起服务,
-      也喜欢亲手把项目容器化、部署到服务器上跑起来。
+      从界面到服务端一手包办:前端用 React、Vue 和 TypeScript 构建交互,
+      后端用 Node.js / Express 和 Python + MySQL 撑起 API 与数据,
+      再亲手做 Docker 容器化、Nginx 反向代理和 HTTPS,把项目部署到服务器上跑起来。
+      曾在苏州斓舟智能科技实习,参与已上线的 AI 智能体教育平台 LeBotWorld 的开发。
       这里是我的作品集——下面两个项目,从写代码到上线,都是我亲手完成的。
     </p>
     <div class="stack">
-      <span>Vue 3</span><span>TypeScript</span><span>Node.js</span><span>Express</span>
-      <span>MySQL</span><span>Redis</span><span>Docker</span><span>Nginx</span>
+      <span class="stack-cat">前端</span>
+      <span>React 19</span><span>Vue 3</span><span>TypeScript</span><span>Tailwind CSS</span><span>uni-app</span>
+      <span class="stack-cat">后端</span>
+      <span>Node.js</span><span>Express</span><span>Python</span><span>MySQL</span><span>Redis</span><span>Socket.IO</span>
+      <span class="stack-cat">部署</span>
+      <span>Docker</span><span>Nginx</span><span>Linux</span><span>Git</span>
     </div>
+  </section>
+
+  <!-- 实习经历 -->
+  <section id="internship" class="internship">
+    <h2>实习经历</h2>
+    <article class="job">
+      <div class="job-head">
+        <h3>苏州斓舟智能科技有限公司 · 全栈开发实习生</h3>
+        <span class="job-time">2026.07 – 2026.10</span>
+      </div>
+      <p class="job-project">
+        参与已上线的 AI 智能体教育平台 <strong>LeBotWorld · 乐伴智能体世界</strong> 的开发——
+        一个连接「学 AI、用 AI、创造自己的 AI 伙伴」的平台,覆盖课程学习、智能体创建与对话实践等场景。
+        前端 React 19 + TypeScript,后端 Python FastAPI + PostgreSQL,全栈参与。
+      </p>
+      <ul class="job-points">
+        <li>独立负责教育空间模块,覆盖学生端 / 教师端 / 管理后台三端 30 余个页面与组件,技术栈 React 19 + TypeScript + Tailwind CSS</li>
+        <li>使用 Python FastAPI + PostgreSQL 开发学习进度持久化、授课分配等后端接口并上线,编写 Alembic 数据库迁移与 pytest 测试</li>
+        <li>结合平台 RAG 知识库能力(文件上传 → 向量化 → 检索问答),完成课程资料智能问答功能的前后端联调与页面落地</li>
+        <li>实习期间 170 余次提交经 Code Review 合入主干并上线,参与多端功能迭代,与产品、后端协作完成需求落地与接口联调</li>
+      </ul>
+      <div class="tags">
+        <span>React 19</span><span>TypeScript</span><span>Tailwind CSS</span><span>Python</span><span>FastAPI</span><span>PostgreSQL</span><span>RAG</span><span>pytest</span>
+      </div>
+      <div class="links">
+        <a class="btn" href="https://lebotworld.com/" target="_blank" rel="noopener">LeBotWorld 平台官网</a>
+        <a class="btn ghost" href="https://ailebot.cn/" target="_blank" rel="noopener">爱乐伴品牌官网</a>
+      </div>
+    </article>
   </section>
 
   <!-- 项目卡片 -->
@@ -44,11 +82,11 @@
         <div class="card-body">
           <h3>AI-BlogHub · 个人技术博客</h3>
           <p>
-            Vue 3 + Express + MySQL 的个人博客,集成 AI 写作助手。
-            Docker 三容器部署,Nginx 反向代理与 HTTPS,公网可访问。
+            前后端完全分离的个人博客系统:Express 提供后端 API,MySQL 数据存储,集成 AI 写作助手。
+            Docker Compose 三容器部署(前端 / 后端 / 数据库),Nginx 反向代理 + HTTPS,公网可访问。
           </p>
           <div class="tags">
-            <span>Vue 3</span><span>Express</span><span>MySQL</span><span>Docker</span><span>Nginx</span>
+            <span>Vue 3</span><span>Express</span><span>MySQL</span><span>Docker</span><span>Nginx</span><span>AI 集成</span>
           </div>
           <div class="links">
             <a class="btn" href="https://blog.zzlabai.top" target="_blank" rel="noopener">访问网站</a>
@@ -62,11 +100,12 @@
         <div class="card-body">
           <h3>智途好学 · 在线教育平台</h3>
           <p>
-            在线视频课程平台:课程浏览、下单、学习记录、实时弹幕(Socket.IO)与学习排行榜。
-            Redis 缓存架构,uni-app 多端(H5 / 小程序)。
+            前后端全栈实现的在线视频课程平台:课程浏览、下单购买、学习记录,
+            Socket.IO 实时弹幕与学习排行榜,Redis 缓存热点数据。
+            uni-app 一套代码多端运行(H5 / 小程序)。
           </p>
           <div class="tags">
-            <span>uni-app</span><span>Vue 3</span><span>Node.js</span><span>Redis</span><span>Socket.IO</span>
+            <span>uni-app</span><span>Vue 3</span><span>Node.js</span><span>Redis</span><span>Socket.IO</span><span>MySQL</span>
           </div>
           <div class="links">
             <a class="btn" href="https://edu.zzlabai.top" target="_blank" rel="noopener">访问网站</a>

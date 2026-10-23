@@ -58,7 +58,7 @@ body {
 .subtitle { color: var(--primary); font-weight: 600; margin-bottom: 14px; }
 .intro { color: var(--muted); margin-bottom: 18px; }
 
-/* 技术栈小标签 */
+/* 技术栈小标签(带分组) */
 .stack { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .stack span {
   background: #eef1fe;
@@ -67,6 +67,43 @@ body {
   padding: 4px 12px;
   border-radius: 999px;
 }
+.stack .stack-cat {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ========= 实习经历 ========= */
+.internship {
+  max-width: 960px;
+  margin: 48px auto 0;
+  padding: 0 24px;
+}
+.internship h2 { text-align: center; margin-bottom: 28px; }
+
+.job {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px 28px 24px;
+}
+.job-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.job-head h3 { font-size: 19px; }
+.job-time { color: var(--muted); font-size: 14px; white-space: nowrap; }
+.job-project { margin-bottom: 12px; }
+.job-points {
+  margin: 0 0 18px 20px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.job-points li { margin-bottom: 6px; }
 
 /* ========= 项目卡片 ========= */
 .projects {
@@ -109,7 +146,7 @@ body {
   border-radius: 999px;
 }
 
-.links { display: flex; gap: 10px; }
+.links { display: flex; gap: 10px; flex-wrap: wrap; }
 
 /* ========= 按钮 ========= */
 .btn {
@@ -145,4 +182,5 @@ footer a:hover { color: var(--primary); }
 @media (max-width: 640px) {
   .hero h1 { font-size: 24px; }
   .cards { grid-template-columns: 1fr; }
+  .job { padding: 22px 18px 20px; }
 }
