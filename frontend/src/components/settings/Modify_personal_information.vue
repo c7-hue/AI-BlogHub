@@ -5,7 +5,6 @@
       <div class="modify-info__avatar">
         <label class="modify-info__avatar__box">
           <input
-            ref="fileRef"
             type="file"
             accept="image/*"
             style="display: none"
@@ -59,7 +58,6 @@ const userStore = useUserStore()
 
 const visible = ref(false)
 const saving = ref(false)
-const fileRef = ref<HTMLInputElement>()
 const cropperRef = ref<InstanceType<typeof AvatarCropper>>()
 
 // 表单数据

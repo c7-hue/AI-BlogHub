@@ -87,10 +87,11 @@ const dragging = {
 // 打开弹窗并载入图片
 const open = (file: File) => {
   const url = URL.createObjectURL(file)
-  img = new Image()
-  img.onload = () => {
+  const image = new Image()
+  img = image // 同步模块级引用，供 redraw / confirm 使用
+  image.onload = () => {
     // 基础缩放：滑杆 50% 时图片短边刚好盖住裁剪框（可缩到 0.2 倍，放到 2 倍）
-    scaleFactor = 2 * Math.max(CROP / img.width, CROP / img.height)
+    scaleFactor = 2 * Math.max(CROP / image.width, CROP / image.height)
     offsetX.value = 0
     offsetY.value = 0
     rotation.value = 0
@@ -104,11 +105,11 @@ const open = (file: File) => {
     })
     URL.revokeObjectURL(url)
   }
-  img.onerror = () => {
+  image.onerror = () => {
     YkMessage({ type: 'error', message: '图片加载失败' })
     URL.revokeObjectURL(url)
   }
-  img.src = url
+  image.src = url
 }
 
 // 缩放值变化时自动重绘（滑杆点击/拖动、按钮、滚轮都覆盖）
