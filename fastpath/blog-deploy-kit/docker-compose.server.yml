@@ -1,0 +1,76 @@
+# 快车道专用:frontend 用本地构建产物组装(秒级),backend 直接复用服务器上已构建好的镜像
+# 用法:在本目录  docker compose -f docker-compose.server.yml up -d --build
+name: bloghub-fastpath
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    image: bloghub-frontend:fastpath
+    container_name: bloghub-frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    volumes:
+      - /www/certs:/etc/nginx/certs:ro
+
+  backend:
+    image: ai-bloghub-backend:latest
+    container_name: bloghub-backend
+    env_file: .env
+    environment:
+      TZ: Asia/Shanghai
+      PORT: 3001
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_NAME: xxblog
+      AI_SERVICE_URL: http://ai-service:3002
+    depends_on:
+      - db
+      - ai-service
+    restart: unless-stopped
+    volumes:
+      - backend_data:/app/data
+
+  # RAG 检索增强问答微服务:文章分块→bge-m3 向量化→余弦检索→DeepSeek 生成
+  # .env 需含 EMBEDDING_API_KEY / DEEPSEEK_API_KEY;没配也能启动,只是检索降级
+  ai-service:
+    build:
+      context: ../../ai-service
+      dockerfile: Dockerfile
+    image: bloghub-ai:fastpath
+    container_name: bloghub-ai
+    env_file: .env
+    environment:
+      TZ: Asia/Shanghai
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_NAME: xxblog
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: bloghub-db
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: xxblog
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+    # 故意不暴露 3306 到公网,数据库只在容器内网访问
+
+volumes:
+  mysql_data:
+  backend_data:
