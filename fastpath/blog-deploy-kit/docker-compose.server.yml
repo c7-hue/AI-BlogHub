@@ -17,6 +17,9 @@ services:
     restart: unless-stopped
     volumes:
       - /www/certs:/etc/nginx/certs:ro
+    networks:
+      - default          # 原有内网(连 backend/ai-service)
+      - bloghub-shared   # 共享网:与智途容器组互通(门4 转发 edu-frontend 靠它)
 
   backend:
     image: ai-bloghub-backend:latest
@@ -68,9 +71,18 @@ services:
       - --collation-server=utf8mb4_unicode_ci
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - default
+      - bloghub-shared   # 共享网:让智途的 edu-backend 能跨项目连库
     restart: unless-stopped
     # 故意不暴露 3306 到公网,数据库只在容器内网访问
 
 volumes:
   mysql_data:
   backend_data:
+
+# 共享网由智途部署时手动创建(external),这里只声明使用,不负责创建
+networks:
+  bloghub-shared:
+    name: bloghub-shared
+    external: true
