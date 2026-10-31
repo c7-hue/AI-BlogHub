@@ -177,6 +177,7 @@ footer {
 }
 footer a { color: var(--muted); text-decoration: none; }
 footer a:hover { color: var(--primary); }
+footer a.beian-ga img { height: 14px; vertical-align: -2px; margin-right: 3px; }
 
 /* ========= 手机端适配 ========= */
 @media (max-width: 640px) {
